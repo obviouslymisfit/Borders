@@ -1,0 +1,24 @@
+{
+	"schemaVersion": 1,
+	"id": "borders",
+	"version": "${version}",
+	"name": "Borders",
+	"description": "Server-side border mechanics for our Fabric 1.21.10 server.",
+	"authors": [
+		"ObviouslyMisfit"
+	],
+	"license": "CC0-1.0",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.borders.BordersMod"
+		],
+		"client": []
+	},
+	"depends": {
+		"fabricloader": ">=0.17.3",
+		"minecraft": "~1.21.10",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}

@@ -1,0 +1,131 @@
+package com.borders.border;
+
+import com.borders.BordersMod;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.border.WorldBorder;
+
+/**
+ * Handles all world-border-related behavior:
+ *  - Initial border creation on first join
+ *  - Manual border growth/shrink (via commands or discovery)
+ *  - Clamping players inside the current border
+ *  - Resetting border to original spawn chunk
+ *
+ * This class contains NO global state — it only mutates GameState
+ * through BordersMod.STATE and operates on the world border instance.
+ */
+public class BorderManager {
+
+    /**
+     * Adjusts the border size by a delta.
+     *
+     * @param level       The world (server level)
+     * @param currentSize Current border diameter
+     * @param delta       Positive or negative change
+     * @return The updated border size
+     */
+    public static double changeBorderSize(ServerLevel level, double currentSize, double delta) {
+        WorldBorder border = level.getWorldBorder();
+        double newSize = currentSize + delta;
+        border.setSize(newSize);
+        return newSize;
+    }
+
+    /**
+     * Called only once: when the very first player joins the server.
+     * This initializes:
+     *  - GameState border flags
+     *  - The spawn position for resets
+     *  - Border center position
+     *  - Starting border size (16x16)
+     *  - Teleports first player into the center of their chunk
+     */
+    public static void initializeBorderOnFirstJoin(ServerLevel level, ServerPlayer player) {
+        BordersMod.STATE.BORDER_INITIALIZED = true;
+
+        // First player’s position becomes the "spawn" for our custom border logic
+        BlockPos spawnPos = player.blockPosition();
+        BordersMod.STATE.initialSpawnPos = spawnPos;
+
+        // Determine chunk center from spawn position
+        ChunkPos chunkPos = new ChunkPos(spawnPos);
+        BordersMod.STATE.borderCenterX = chunkPos.getMiddleBlockX();
+        BordersMod.STATE.borderCenterZ = chunkPos.getMiddleBlockZ();
+
+        // Apply border center + starting border size
+        WorldBorder border = level.getWorldBorder();
+        border.setCenter(BordersMod.STATE.borderCenterX, BordersMod.STATE.borderCenterZ);
+        border.setSize(16.0);
+        BordersMod.STATE.currentBorderSize = 16.0;
+
+        // Log for debugging
+        BordersMod.LOGGER.info(
+                "World border initialized around spawn chunk ({}, {}) at center ({}, {}).",
+                chunkPos.x, chunkPos.z,
+                BordersMod.STATE.borderCenterX, BordersMod.STATE.borderCenterZ
+        );
+
+        // Ensure the first player stands inside the center of their chunk
+        player.teleportTo(
+                spawnPos.getX() + 0.5,
+                spawnPos.getY(),
+                spawnPos.getZ() + 0.5
+        );
+    }
+
+    /**
+     * Used when a player joins after the border is already initialized.
+     * If they join outside the border, they are teleported back to the spawn center.
+     */
+    public static void clampPlayerInsideBorder(ServerLevel level, ServerPlayer player) {
+        if (BordersMod.STATE.initialSpawnPos == null) return;
+
+        double half = BordersMod.STATE.currentBorderSize / 2.0;
+        double px = player.getX();
+        double pz = player.getZ();
+
+        double centerX = BordersMod.STATE.borderCenterX;
+        double centerZ = BordersMod.STATE.borderCenterZ;
+
+        // Check if position is outside our manually tracked border
+        boolean outside =
+                px < centerX - half || px > centerX + half ||
+                        pz < centerZ - half || pz > centerZ + half;
+
+        if (outside) {
+            BlockPos spawn = BordersMod.STATE.initialSpawnPos;
+
+            player.teleportTo(
+                    spawn.getX() + 0.5,
+                    spawn.getY(),
+                    spawn.getZ() + 0.5
+            );
+        }
+    }
+
+    /**
+     * Resets the world border to its original state:
+     *  - Recenters at the initial spawn-position chunk
+     *  - Returns size to 16x16
+     *
+     * Called by /borders reset.
+     */
+    public static void resetBorder(ServerLevel level) {
+        WorldBorder border = level.getWorldBorder();
+
+        // Recalculate chunk center from stored spawn position
+        if (BordersMod.STATE.initialSpawnPos != null) {
+            ChunkPos chunkPos = new ChunkPos(BordersMod.STATE.initialSpawnPos);
+            BordersMod.STATE.borderCenterX = chunkPos.getMiddleBlockX();
+            BordersMod.STATE.borderCenterZ = chunkPos.getMiddleBlockZ();
+        }
+
+        // Apply reset parameters
+        border.setCenter(BordersMod.STATE.borderCenterX, BordersMod.STATE.borderCenterZ);
+        border.setSize(16.0);
+        BordersMod.STATE.currentBorderSize = 16.0;
+    }
+}
