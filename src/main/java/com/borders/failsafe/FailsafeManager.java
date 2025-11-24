@@ -75,6 +75,9 @@ public class FailsafeManager {
                 BordersMod.STATE.currentBorderSize
         );
 
+        // Sync border size + center across Overworld, Nether, and End
+        BorderManager.applyBorderToAllDimensions(server);
+
         // Reflect the new border size in the sidebar, if active
         ScoreboardManager.updateBorderSizeLine(server);
 

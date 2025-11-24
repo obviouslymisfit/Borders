@@ -88,6 +88,9 @@ public class DiscoveryManager {
                     BordersMod.STATE.currentBorderSize
             );
 
+            // Sync border size + center across Overworld, Nether, and End
+            BorderManager.applyBorderToAllDimensions(server);
+
             // Reflect the new border size in the sidebar
             ScoreboardManager.updateBorderSizeLine(server);
         }

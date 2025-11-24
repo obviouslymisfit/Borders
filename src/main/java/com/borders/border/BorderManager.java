@@ -2,9 +2,11 @@ package com.borders.border;
 
 import com.borders.BordersMod;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.border.WorldBorder;
 
 /**
@@ -13,6 +15,7 @@ import net.minecraft.world.level.border.WorldBorder;
  *  - Manual border growth/shrink (via commands or discovery)
  *  - Clamping players inside the current border
  *  - Resetting border to original spawn chunk
+ *  - Syncing border state across Overworld, Nether and End
  *
  * This class contains NO global state — it only mutates GameState
  * through BordersMod.STATE and operates on the world border instance.
@@ -20,11 +23,11 @@ import net.minecraft.world.level.border.WorldBorder;
 public class BorderManager {
 
     /**
-     * Adjusts the border size by a delta.
+     * Adjusts the border size by a delta in a single level.
      *
      * @param level       The world (server level)
      * @param currentSize Current border diameter
-     * @param delta       Positive or negative change
+     * @param delta       Positive or negative change (diameter)
      * @return The updated border size
      */
     public static double changeBorderSize(ServerLevel level, double currentSize, double delta) {
@@ -35,6 +38,38 @@ public class BorderManager {
     }
 
     /**
+     * Applies the current border configuration (center + size) from GameState
+     * to all main dimensions:
+     *
+     *  - Overworld
+     *  - Nether
+     *  - End
+     *
+     * All three share the same:
+     *  - centerX / centerZ
+     *  - diameter (currentBorderSize)
+     *
+     * Nether is NOT scaled by 8x – border size is identical there.
+     */
+    public static void applyBorderToAllDimensions(MinecraftServer server) {
+        double size = BordersMod.STATE.currentBorderSize;
+        double centerX = BordersMod.STATE.borderCenterX;
+        double centerZ = BordersMod.STATE.borderCenterZ;
+
+        syncBorderForLevel(server.getLevel(Level.OVERWORLD), size, centerX, centerZ);
+        syncBorderForLevel(server.getLevel(Level.NETHER), size, centerX, centerZ);
+        syncBorderForLevel(server.getLevel(Level.END), size, centerX, centerZ);
+    }
+
+    private static void syncBorderForLevel(ServerLevel level, double size, double centerX, double centerZ) {
+        if (level == null) return;
+
+        WorldBorder border = level.getWorldBorder();
+        border.setCenter(centerX, centerZ);
+        border.setSize(size);
+    }
+
+    /**
      * Called only once: when the very first player joins the server.
      * This initializes:
      *  - GameState border flags
@@ -42,6 +77,8 @@ public class BorderManager {
      *  - Border center position
      *  - Starting border size (16x16)
      *  - Teleports first player into the center of their chunk
+     *
+     * It also applies the same border to Nether and End.
      */
     public static void initializeBorderOnFirstJoin(ServerLevel level, ServerPlayer player) {
         BordersMod.STATE.BORDER_INITIALIZED = true;
@@ -55,11 +92,11 @@ public class BorderManager {
         BordersMod.STATE.borderCenterX = chunkPos.getMiddleBlockX();
         BordersMod.STATE.borderCenterZ = chunkPos.getMiddleBlockZ();
 
-        // Apply border center + starting border size
-        WorldBorder border = level.getWorldBorder();
-        border.setCenter(BordersMod.STATE.borderCenterX, BordersMod.STATE.borderCenterZ);
-        border.setSize(16.0);
+        // Starting border size
         BordersMod.STATE.currentBorderSize = 16.0;
+
+        // Apply border center + starting border size to all dimensions
+        applyBorderToAllDimensions(level.getServer());
 
         // Log for debugging
         BordersMod.LOGGER.info(
@@ -79,6 +116,10 @@ public class BorderManager {
     /**
      * Used when a player joins after the border is already initialized.
      * If they join outside the border, they are teleported back to the spawn center.
+     *
+     * This logic is dimension-agnostic; it uses the cached center and size
+     * from GameState and always teleports to the stored spawn position
+     * (which is in the Overworld).
      */
     public static void clampPlayerInsideBorder(ServerLevel level, ServerPlayer player) {
         if (BordersMod.STATE.initialSpawnPos == null) return;
@@ -112,10 +153,9 @@ public class BorderManager {
      *  - Returns size to 16x16
      *
      * Called by /borders reset.
+     * Border is re-applied to Overworld, Nether, and End.
      */
     public static void resetBorder(ServerLevel level) {
-        WorldBorder border = level.getWorldBorder();
-
         // Recalculate chunk center from stored spawn position
         if (BordersMod.STATE.initialSpawnPos != null) {
             ChunkPos chunkPos = new ChunkPos(BordersMod.STATE.initialSpawnPos);
@@ -123,9 +163,10 @@ public class BorderManager {
             BordersMod.STATE.borderCenterZ = chunkPos.getMiddleBlockZ();
         }
 
-        // Apply reset parameters
-        border.setCenter(BordersMod.STATE.borderCenterX, BordersMod.STATE.borderCenterZ);
-        border.setSize(16.0);
+        // Reset size in state
         BordersMod.STATE.currentBorderSize = 16.0;
+
+        // Apply reset parameters to all dimensions
+        applyBorderToAllDimensions(level.getServer());
     }
 }

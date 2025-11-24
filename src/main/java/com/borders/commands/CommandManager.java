@@ -83,7 +83,7 @@ public class CommandManager {
                                             BordersMod.STATE.lastDiscoveryTick = BordersMod.STATE.globalTick;
 
                                             ctx.getSource().sendSystemMessage(
-                                                    Component.literal("[Borders] Failsafe timer set to "
+                                                    Component.literal("[Borders] Inactivity expansion timer set to "
                                                             + seconds + " seconds.")
                                             );
                                             return 1;
@@ -143,6 +143,9 @@ public class CommandManager {
                                                             delta
                                                     );
 
+                                            // Sync all dimensions to the new size
+                                            BorderManager.applyBorderToAllDimensions(server);
+
                                             // Update border size in scoreboard
                                             ScoreboardManager.updateBorderSizeLine(server);
 
@@ -188,6 +191,9 @@ public class CommandManager {
                                                 overworld.getWorldBorder()
                                                         .setSize(BordersMod.STATE.currentBorderSize);
                                             }
+
+                                            // Sync all dimensions to the new (possibly clamped) size
+                                            BorderManager.applyBorderToAllDimensions(server);
 
                                             // Update border size in scoreboard
                                             ScoreboardManager.updateBorderSizeLine(server);
@@ -246,7 +252,7 @@ public class CommandManager {
                                 }
                             }
 
-                            // Reset border
+                            // Reset border (Overworld + sync to Nether/End inside)
                             BorderManager.resetBorder(overworld);
 
                             // Reset game state
@@ -256,9 +262,6 @@ public class CommandManager {
                             BordersMod.STATE.lastDiscoveryTick = 0L;
                             BordersMod.STATE.gameActive = false;
                             BordersMod.STATE.failsafeEnabled = false;
-
-                            // After reset, if the scoreboard is re-used later, border size line
-                            // will be recreated via getOrCreateDiscoveryObjective/updateBorderSizeLine.
 
                             ctx.getSource().sendSystemMessage(
                                     Component.literal("[Borders] Game reset: border, items, and inventories cleared.")
