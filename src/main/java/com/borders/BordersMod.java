@@ -6,6 +6,8 @@ import com.borders.discovery.DiscoveryManager;
 import com.borders.failsafe.FailsafeManager;
 import com.borders.inventory.InventoryTracker;
 import com.borders.state.GameState;
+import com.borders.death.DeathManager;
+
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -76,6 +78,9 @@ public class BordersMod implements ModInitializer {
 				BorderManager.clampPlayerInsideBorder(level, player);
 			}
 		});
+
+		// Register DeathManager
+		DeathManager.register();
 
 		// Register /borders commands (start, stop, grow, shrink, reset, settimer)
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {

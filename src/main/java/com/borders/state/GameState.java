@@ -92,4 +92,15 @@ public class GameState {
      * Used to detect which items increased between ticks.
      */
     public final Map<UUID, Map<Item, Integer>> LAST_INVENTORIES = new HashMap<>();
+
+    // ------------------------------------------------------------------------
+    // Death-triggered border shrink (v1.3)
+    // ------------------------------------------------------------------------
+
+    /** Whether the border should shrink when a player dies. */
+    public boolean deathShrinkEnabled = true;
+
+    /** How many blocks per side the border shrinks when a player dies. */
+    public int deathShrinkBlocksPerSide = 5;
+
 }

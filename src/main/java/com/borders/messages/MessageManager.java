@@ -1,6 +1,7 @@
 package com.borders.messages;
 
 import com.borders.BordersMod;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 
@@ -9,9 +10,10 @@ import net.minecraft.network.chat.TextColor;
  *
  * Right now this focuses on:
  *  - Randomized flavor text when a new item is discovered
- *  - Colored player name and item name formatting
- *  - Nicely formatted info messages for /borders info
- *  - Failsafe border expansion announcements
+ *  - Failsafe (inactivity) border expansions
+ *  - Info panels for /borders info
+ *  - Death-triggered border shrink messages (v1.3)
+ *  - Colored player/item formatting
  */
 public class MessageManager {
 
@@ -54,41 +56,44 @@ public class MessageManager {
     };
 
     /**
-     * Pool of message pairs used when the automatic expansion (failsafe)
-     * triggers after a long period of no new discoveries.
-     *
-     * Each entry is:
-     *   [0] -> second line
-     *   [1] -> third line
-     *
-     * Header line is shared and added separately.
+     * Pool of messages used when the inactivity expansion triggers.
      */
-    private static final String[][] FAILSAFE_MESSAGES = new String[][] {
-            {
-                    "Silence in the item hunt…",
-                    "The world grows restless and expands."
-            },
-            {
-                    "No new discoveries echo in the air…",
-                    "The border nudges outward on its own."
-            },
-            {
-                    "The item gods are getting bored…",
-                    "They shove the border a little further."
-            },
-            {
-                    "The world waits… and then shrugs.",
-                    "Fine, have more land."
-            },
-            {
-                    "Inventory stagnation detected…",
-                    "Automatic border expansion engaged."
-            },
-            {
-                    "Nobody’s found anything shiny lately…",
-                    "The border stretches just to tempt you."
-            }
+    public static final String[] FAILSAFE_MESSAGES = new String[] {
+            "Nobody found anything new, so the world got bored and stretched.",
+            "The realm sighs and grows on its own.",
+            "Silence... so the border moves just to feel something.",
+            "No discoveries? Fine. The border expands out of pity.",
+            "The world taps its foot, then scoots the border outward.",
+            "Explorers slacking — the world grows anyway.",
+            "Inactivity detected. Border expands just to break the silence.",
+            "The world twitches from boredom and grows a bit.",
+            "Nothing new? The border takes a lazy step back.",
+            "The realm nudges its walls outward, waiting for you to wake up."
     };
+
+    /**
+     * Pool of messages used when a player dies and the border shrinks.
+     * Style: slightly dark, sarcastic, playful.
+     */
+    public static final String[] DEATH_SHRINK_MESSAGES = new String[] {
+            "took an L. The world panics and squeezes inward.",
+            "faceplanted. The border shrinks out of pure disappointment.",
+            "got deleted. The border retreats, scared it’s next.",
+            "forgot how to live. The realm tightens in their honor.",
+            "didn’t stick the landing. The border flinches and pulls back.",
+            "went bonk. The map shrinks from second-hand trauma.",
+            "tripped over gravity. The world nervously tightens its grip.",
+            "used the respawn strat. The border rage-shrinks in response.",
+            "forgot fall damage exists. The world closes in a bit.",
+            "embraced the void. The realm shrinks in awkward silence.",
+            "took a skill issue to the face. The border pulls closer.",
+            "met the respawn screen. The world reels the walls in.",
+            "ran out of hearts. The border tightens like a stress ball."
+    };
+
+    // ---------------------------------------------------------------------
+    // Discovery message
+    // ---------------------------------------------------------------------
 
     /**
      * Builds the discovery message shown when a player finds a new item.
@@ -126,24 +131,77 @@ public class MessageManager {
                 .append(Component.literal("! " + suffix));
     }
 
+    // ---------------------------------------------------------------------
+    // Failsafe (inactivity) expansion messages
+    // ---------------------------------------------------------------------
+
     /**
-     * Builds the set of info lines used by /borders info.
+     * Builds the multi-line message shown when the inactivity expansion triggers.
      *
-     * Style B:
-     *  - Header: aqua frame
-     *  - Labels: blue / aqua
-     *  - Values: yellow for numbers, green/red for status
+     * @return An array of Components to broadcast line-by-line.
+     */
+    public static Component[] buildFailsafeExpansionMessages() {
+        String suffix = FAILSAFE_MESSAGES[
+                BordersMod.RANDOM.nextInt(FAILSAFE_MESSAGES.length)
+                ];
+
+        Component line1 = Component.literal("=== Border Update ===")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0xFFA500)) // orange
+                        .withBold(true)
+                );
+
+        Component line2 = Component.literal("No new items for a while...")
+                .withStyle(ChatFormatting.YELLOW);
+
+        Component line3 = Component.literal(suffix)
+                .withStyle(ChatFormatting.GOLD);
+
+        return new Component[] { line1, line2, line3 };
+    }
+
+    // ---------------------------------------------------------------------
+    // Death-triggered border shrink messages (v1.3)
+    // ---------------------------------------------------------------------
+
+    /**
+     * Builds the multi-line message shown when a player dies and causes
+     * the world border to shrink.
      *
-     * @param gameActive              Whether the Borders game is active
-     * @param failsafeEnabled         Whether the failsafe is enabled
-     * @param borderSize              Current border size (diameter)
-     * @param centerX                 World border center X
-     * @param centerZ                 World border center Z
-     * @param discoveredCount         Number of unique items discovered
-     * @param growthBlocksPerSide     Blocks added on each side per discovery
-     * @param failsafeDelaySeconds    Configured failsafe delay in seconds
-     * @param secondsSinceDiscovery   Seconds since last discovery
-     * @return An array of Components, each to be sent as a separate chat line
+     * @param playerName Name of the player who died
+     * @return An array of Components to broadcast line-by-line.
+     */
+    public static Component[] buildDeathShrinkMessages(String playerName) {
+        String suffix = DEATH_SHRINK_MESSAGES[
+                BordersMod.RANDOM.nextInt(DEATH_SHRINK_MESSAGES.length)
+                ];
+
+        Component line1 = Component.literal("=== Border Shrink ===")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0xFF5555)) // light red
+                        .withBold(true)
+                );
+
+        Component line2 = Component.literal("")
+                .append(
+                        Component.literal(playerName)
+                                .withStyle(style -> style.withColor(TextColor.fromRgb(0x55FFFF))) // cyan
+                )
+                .append(Component.literal(" "))
+                .append(
+                        Component.literal(suffix)
+                                .withStyle(style -> style.withColor(TextColor.fromRgb(0xFFAA00))) // gold-ish
+                );
+
+        return new Component[] { line1, line2 };
+    }
+
+    // ---------------------------------------------------------------------
+    // /borders info panel
+    // ---------------------------------------------------------------------
+
+    /**
+     * Builds the info output for /borders info.
      */
     public static Component[] buildInfoMessages(
             boolean gameActive,
@@ -154,142 +212,48 @@ public class MessageManager {
             int discoveredCount,
             int growthBlocksPerSide,
             long failsafeDelaySeconds,
-            long secondsSinceDiscovery
+            long secondsSinceLastDiscovery
     ) {
-        TextColor headerFrameColor = TextColor.fromRgb(0x00CCCC);  // aqua-ish
-        TextColor headerTextColor  = TextColor.fromRgb(0x00FFFF);  // bright aqua
-        TextColor labelColor       = TextColor.fromRgb(0x00AAAA);  // dark aqua / blue
-        TextColor valueNumberColor = TextColor.fromRgb(0xFFD700);  // gold
-        TextColor greenColor       = TextColor.fromRgb(0x55FF55);  // status: yes/on
-        TextColor redColor         = TextColor.fromRgb(0xFF5555);  // status: no/off;
-        TextColor grayColor        = TextColor.fromRgb(0xAAAAAA);  // parentheses, etc.
+        Component header = Component.literal("=== Borders Info ===")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x00FFFF)) // aqua
+                        .withBold(true)
+                );
 
-        // Header: === Borders Info ===
-        Component header = Component.literal("")
-                .append(Component.literal("=== ")
-                        .withStyle(style -> style.withColor(headerFrameColor)))
-                .append(Component.literal("Borders Info")
-                        .withStyle(style -> style.withColor(headerTextColor)))
-                .append(Component.literal(" ===")
-                        .withStyle(style -> style.withColor(headerFrameColor)));
+        Component status = Component.literal("Game: ")
+                .append(Component.literal(gameActive ? "ACTIVE" : "INACTIVE")
+                        .withStyle(style -> style.withColor(gameActive ? 0x00FF00 : 0xFF5555)));
 
-        // Game active line
-        Component gameActiveLine = Component.literal("")
-                .append(Component.literal("Game active: ")
-                        .withStyle(style -> style.withColor(labelColor)))
-                .append(Component.literal(gameActive ? "Yes" : "No")
-                        .withStyle(style -> style.withColor(gameActive ? greenColor : redColor)));
+        Component borderLine = Component.literal("Border size: ")
+                .append(Component.literal(String.valueOf((int) Math.round(borderSize)))
+                        .withStyle(style -> style.withColor(0xFFD700)))
+                .append(Component.literal(" (center: " + (int) centerX + ", " + (int) centerZ + ")"));
 
-        // Failsafe line
-        Component failsafeLine = Component.literal("")
-                .append(Component.literal("Failsafe: ")
-                        .withStyle(style -> style.withColor(labelColor)))
-                .append(Component.literal(failsafeEnabled ? "Enabled" : "Disabled")
-                        .withStyle(style -> style.withColor(failsafeEnabled ? greenColor : redColor)));
-
-        // Border size line
-        Component borderLine = Component.literal("")
-                .append(Component.literal("Border: ")
-                        .withStyle(style -> style.withColor(labelColor)))
-                .append(Component.literal(String.valueOf(borderSize))
-                        .withStyle(style -> style.withColor(valueNumberColor)))
-                .append(Component.literal(" (diameter)")
-                        .withStyle(style -> style.withColor(grayColor)));
-
-        // Center line
-        Component centerLine = Component.literal("")
-                .append(Component.literal("Center: ")
-                        .withStyle(style -> style.withColor(labelColor)))
-                .append(Component.literal("X=")
-                        .withStyle(style -> style.withColor(grayColor)))
-                .append(Component.literal(String.valueOf(centerX))
-                        .withStyle(style -> style.withColor(valueNumberColor)))
-                .append(Component.literal(" Z=")
-                        .withStyle(style -> style.withColor(grayColor)))
-                .append(Component.literal(String.valueOf(centerZ))
-                        .withStyle(style -> style.withColor(valueNumberColor)));
-
-        // Discoveries line
-        Component discoveriesLine = Component.literal("")
-                .append(Component.literal("Discoveries: ")
-                        .withStyle(style -> style.withColor(labelColor)))
+        Component discoveries = Component.literal("Unique items discovered: ")
                 .append(Component.literal(String.valueOf(discoveredCount))
-                        .withStyle(style -> style.withColor(valueNumberColor)));
+                        .withStyle(style -> style.withColor(0x7FCC19)));
 
-        // Growth per discovery line
-        Component growthLine = Component.literal("")
-                .append(Component.literal("Growth per discovery: ")
-                        .withStyle(style -> style.withColor(labelColor)))
-                .append(Component.literal(String.valueOf(growthBlocksPerSide))
-                        .withStyle(style -> style.withColor(valueNumberColor)))
-                .append(Component.literal(" blocks/side")
-                        .withStyle(style -> style.withColor(grayColor)));
+        Component growth = Component.literal("Growth per discovery: ")
+                .append(Component.literal(growthBlocksPerSide + " blocks per side")
+                        .withStyle(style -> style.withColor(0xFFD700)));
 
-        // Failsafe delay
-        Component failsafeDelayLine = Component.literal("")
-                .append(Component.literal("Failsafe delay: ")
-                        .withStyle(style -> style.withColor(labelColor)))
-                .append(Component.literal(failsafeDelaySeconds + "s")
-                        .withStyle(style -> style.withColor(valueNumberColor)));
+        Component failsafeLine = Component.literal("Inactivity expansion: ")
+                .append(Component.literal(failsafeEnabled ? "ON" : "OFF")
+                        .withStyle(style -> style.withColor(failsafeEnabled ? 0x00FF00 : 0xFF5555)))
+                .append(Component.literal(" (after " + failsafeDelaySeconds + "s)"));
 
-        // Since last discovery
-        Component lastDiscoveryLine = Component.literal("")
-                .append(Component.literal("Since last discovery: ")
-                        .withStyle(style -> style.withColor(labelColor)))
-                .append(Component.literal(secondsSinceDiscovery + "s")
-                        .withStyle(style -> style.withColor(valueNumberColor)));
+        Component lastDiscovery = Component.literal("Time since last discovery: ")
+                .append(Component.literal(secondsSinceLastDiscovery + "s")
+                        .withStyle(style -> style.withColor(0xAAAAAA)));
 
         return new Component[] {
                 header,
-                gameActiveLine,
-                failsafeLine,
+                status,
                 borderLine,
-                centerLine,
-                discoveriesLine,
-                growthLine,
-                failsafeDelayLine,
-                lastDiscoveryLine
+                discoveries,
+                growth,
+                failsafeLine,
+                lastDiscovery
         };
-    }
-
-    /**
-     * Builds the 3-line announcement used when the automatic border expansion
-     * triggers after a period of no new discoveries.
-     *
-     * Style:
-     *  === Borders Update ===
-     *  <random quirky line>
-     *  <random quirky line>
-     */
-    public static Component[] buildFailsafeExpansionMessages() {
-        TextColor headerFrameColor = TextColor.fromRgb(0x00CCCC);  // aqua-ish
-        TextColor headerTextColor  = TextColor.fromRgb(0x00FFFF);  // bright aqua
-        TextColor line2Color       = TextColor.fromRgb(0x00AAAA);  // soft aqua/blue
-        TextColor line3Color       = TextColor.fromRgb(0xFFD700);  // gold
-
-        // Shared header
-        Component header = Component.literal("")
-                .append(Component.literal("=== ")
-                        .withStyle(style -> style.withColor(headerFrameColor)))
-                .append(Component.literal("Borders Update")
-                        .withStyle(style -> style.withColor(headerTextColor)))
-                .append(Component.literal(" ===")
-                        .withStyle(style -> style.withColor(headerFrameColor)));
-
-        // Pick a random pair from the failsafe pool
-        String[] pair = FAILSAFE_MESSAGES[
-                BordersMod.RANDOM.nextInt(FAILSAFE_MESSAGES.length)
-                ];
-
-        String line2Text = pair[0];
-        String line3Text = pair[1];
-
-        Component line2 = Component.literal(line2Text)
-                .withStyle(style -> style.withColor(line2Color));
-
-        Component line3 = Component.literal(line3Text)
-                .withStyle(style -> style.withColor(line3Color));
-
-        return new Component[] { header, line2, line3 };
     }
 }
