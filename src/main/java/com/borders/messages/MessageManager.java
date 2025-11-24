@@ -212,7 +212,9 @@ public class MessageManager {
             int discoveredCount,
             int growthBlocksPerSide,
             long failsafeDelaySeconds,
-            long secondsSinceLastDiscovery
+            long secondsSinceLastDiscovery,
+            boolean deathShrinkEnabled,
+            int deathShrinkBlocksPerSide
     ) {
         Component header = Component.literal("=== Borders Info ===")
                 .withStyle(style -> style
@@ -246,6 +248,14 @@ public class MessageManager {
                 .append(Component.literal(secondsSinceLastDiscovery + "s")
                         .withStyle(style -> style.withColor(0xAAAAAA)));
 
+        Component deathShrinkLine = Component.literal("Death shrink: ")
+                .append(Component.literal(deathShrinkEnabled ? "ON" : "OFF")
+                        .withStyle(style -> style.withColor(deathShrinkEnabled ? 0x00FF00 : 0xFF5555)))
+                .append(Component.literal(" ("))
+                .append(Component.literal(deathShrinkBlocksPerSide + " blocks per side")
+                        .withStyle(style -> style.withColor(0xFFAA00)))
+                .append(Component.literal(")"));
+
         return new Component[] {
                 header,
                 status,
@@ -253,7 +263,8 @@ public class MessageManager {
                 discoveries,
                 growth,
                 failsafeLine,
-                lastDiscovery
+                lastDiscovery,
+                deathShrinkLine
         };
     }
 }

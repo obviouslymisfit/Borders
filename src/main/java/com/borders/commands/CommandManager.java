@@ -118,6 +118,52 @@ public class CommandManager {
                         )
 
                         // ------------------------------------------------------------
+                        // /borders setdeathshrink <blocksPerSide>
+                        // ------------------------------------------------------------
+                        .then(Commands.literal("setdeathshrink")
+                                .then(Commands.argument("blocksPerSide", IntegerArgumentType.integer(1))
+                                        .executes(ctx -> {
+                                            int perSide = IntegerArgumentType.getInteger(ctx, "blocksPerSide");
+
+                                            BordersMod.STATE.deathShrinkBlocksPerSide = perSide;
+                                            int diameter = perSide * 2;
+
+                                            ctx.getSource().sendSystemMessage(
+                                                    Component.literal("[Borders] Death shrink set to ")
+                                                            .append(Component.literal(String.valueOf(perSide))
+                                                                    .withStyle(style -> style.withColor(0xFFAA00)))
+                                                            .append(Component.literal(" blocks per side ("))
+                                                            .append(Component.literal(String.valueOf(diameter))
+                                                                    .withStyle(style -> style.withColor(0xFFAA00)))
+                                                            .append(Component.literal(" diameter per death)."))
+                                            );
+                                            return 1;
+                                        })
+                                )
+                        )
+
+                        // ------------------------------------------------------------
+                        // /borders toggledeathshrink
+                        // ------------------------------------------------------------
+                        .then(Commands.literal("toggledeathshrink")
+                                .executes(ctx -> {
+                                    boolean newValue = !BordersMod.STATE.deathShrinkEnabled;
+                                    BordersMod.STATE.deathShrinkEnabled = newValue;
+
+                                    ctx.getSource().sendSystemMessage(
+                                            Component.literal("[Borders] Death shrink mechanic: ")
+                                                    .append(
+                                                            Component.literal(newValue ? "ENABLED" : "DISABLED")
+                                                                    .withStyle(style -> style.withColor(
+                                                                            newValue ? 0x00FF00 : 0xFF5555
+                                                                    ))
+                                                    )
+                                    );
+                                    return 1;
+                                })
+                        )
+
+                        // ------------------------------------------------------------
                         // /borders grow <blocks>
                         // ------------------------------------------------------------
                         .then(Commands.literal("grow")
@@ -302,6 +348,9 @@ public class CommandManager {
                             int discoveredCount = BordersMod.STATE.OBTAINED_ITEMS.size();
                             int growthBlocksPerSide = BordersMod.STATE.discoveryGrowthBlocksPerSide;
 
+                            boolean deathShrinkEnabled = BordersMod.STATE.deathShrinkEnabled;
+                            int deathShrinkBlocksPerSide = BordersMod.STATE.deathShrinkBlocksPerSide;
+
                             Component[] lines = MessageManager.buildInfoMessages(
                                     gameActive,
                                     failsafeEnabled,
@@ -311,7 +360,9 @@ public class CommandManager {
                                     discoveredCount,
                                     growthBlocksPerSide,
                                     failsafeDelaySeconds,
-                                    secondsSinceLastDiscovery
+                                    secondsSinceLastDiscovery,
+                                    deathShrinkEnabled,
+                                    deathShrinkBlocksPerSide
                             );
 
                             for (Component line : lines) {
