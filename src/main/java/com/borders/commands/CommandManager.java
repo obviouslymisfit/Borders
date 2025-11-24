@@ -50,6 +50,7 @@ public class CommandManager {
                             // Ensure scoreboard objective exists and is shown
                             MinecraftServer server = ctx.getSource().getServer();
                             ScoreboardManager.getOrCreateDiscoveryObjective(server);
+                            ScoreboardManager.updateBorderSizeLine(server);
 
                             ctx.getSource().sendSystemMessage(
                                     Component.literal("[Borders] Game started.")
@@ -142,6 +143,9 @@ public class CommandManager {
                                                             delta
                                                     );
 
+                                            // Update border size in scoreboard
+                                            ScoreboardManager.updateBorderSizeLine(server);
+
                                             ctx.getSource().sendSystemMessage(
                                                     Component.literal("[Borders] Border grown by " + blocks
                                                             + " blocks each side. New size: "
@@ -184,6 +188,9 @@ public class CommandManager {
                                                 overworld.getWorldBorder()
                                                         .setSize(BordersMod.STATE.currentBorderSize);
                                             }
+
+                                            // Update border size in scoreboard
+                                            ScoreboardManager.updateBorderSizeLine(server);
 
                                             ctx.getSource().sendSystemMessage(
                                                     Component.literal("[Borders] Border shrunk by " + blocks
@@ -249,6 +256,9 @@ public class CommandManager {
                             BordersMod.STATE.lastDiscoveryTick = 0L;
                             BordersMod.STATE.gameActive = false;
                             BordersMod.STATE.failsafeEnabled = false;
+
+                            // After reset, if the scoreboard is re-used later, border size line
+                            // will be recreated via getOrCreateDiscoveryObjective/updateBorderSizeLine.
 
                             ctx.getSource().sendSystemMessage(
                                     Component.literal("[Borders] Game reset: border, items, and inventories cleared.")

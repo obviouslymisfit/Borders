@@ -3,6 +3,7 @@ package com.borders.failsafe;
 import com.borders.BordersMod;
 import com.borders.border.BorderManager;
 import com.borders.messages.MessageManager;
+import com.borders.scoreboard.ScoreboardManager;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -73,6 +74,9 @@ public class FailsafeManager {
                 diameterDelta,
                 BordersMod.STATE.currentBorderSize
         );
+
+        // Reflect the new border size in the sidebar, if active
+        ScoreboardManager.updateBorderSizeLine(server);
 
         // Broadcast a styled message to all players
         PlayerList playerList = server.getPlayerList();

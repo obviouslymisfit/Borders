@@ -87,6 +87,9 @@ public class DiscoveryManager {
                     diameterDelta,
                     BordersMod.STATE.currentBorderSize
             );
+
+            // Reflect the new border size in the sidebar
+            ScoreboardManager.updateBorderSizeLine(server);
         }
     }
 }
