@@ -11,6 +11,7 @@ import net.minecraft.network.chat.TextColor;
  *  - Randomized flavor text when a new item is discovered
  *  - Colored player name and item name formatting
  *  - Nicely formatted info messages for /borders info
+ *  - Failsafe border expansion announcements
  */
 public class MessageManager {
 
@@ -50,6 +51,43 @@ public class MessageManager {
             "The border ran away a bit.",
             "Another discovery? Border yeets outward.",
             "One more item and the world needs therapy."
+    };
+
+    /**
+     * Pool of message pairs used when the automatic expansion (failsafe)
+     * triggers after a long period of no new discoveries.
+     *
+     * Each entry is:
+     *   [0] -> second line
+     *   [1] -> third line
+     *
+     * Header line is shared and added separately.
+     */
+    private static final String[][] FAILSAFE_MESSAGES = new String[][] {
+            {
+                    "Silence in the item hunt…",
+                    "The world grows restless and expands."
+            },
+            {
+                    "No new discoveries echo in the air…",
+                    "The border nudges outward on its own."
+            },
+            {
+                    "The item gods are getting bored…",
+                    "They shove the border a little further."
+            },
+            {
+                    "The world waits… and then shrugs.",
+                    "Fine, have more land."
+            },
+            {
+                    "Inventory stagnation detected…",
+                    "Automatic border expansion engaged."
+            },
+            {
+                    "Nobody’s found anything shiny lately…",
+                    "The border stretches just to tempt you."
+            }
     };
 
     /**
@@ -122,7 +160,6 @@ public class MessageManager {
         TextColor headerTextColor  = TextColor.fromRgb(0x00FFFF);  // bright aqua
         TextColor labelColor       = TextColor.fromRgb(0x00AAAA);  // dark aqua / blue
         TextColor valueNumberColor = TextColor.fromRgb(0xFFD700);  // gold
-        TextColor valueNeutralColor= TextColor.fromRgb(0xFFFFFF);  // white
         TextColor greenColor       = TextColor.fromRgb(0x55FF55);  // status: yes/on
         TextColor redColor         = TextColor.fromRgb(0xFF5555);  // status: no/off;
         TextColor grayColor        = TextColor.fromRgb(0xAAAAAA);  // parentheses, etc.
@@ -213,5 +250,46 @@ public class MessageManager {
                 failsafeDelayLine,
                 lastDiscoveryLine
         };
+    }
+
+    /**
+     * Builds the 3-line announcement used when the automatic border expansion
+     * triggers after a period of no new discoveries.
+     *
+     * Style:
+     *  === Borders Update ===
+     *  <random quirky line>
+     *  <random quirky line>
+     */
+    public static Component[] buildFailsafeExpansionMessages() {
+        TextColor headerFrameColor = TextColor.fromRgb(0x00CCCC);  // aqua-ish
+        TextColor headerTextColor  = TextColor.fromRgb(0x00FFFF);  // bright aqua
+        TextColor line2Color       = TextColor.fromRgb(0x00AAAA);  // soft aqua/blue
+        TextColor line3Color       = TextColor.fromRgb(0xFFD700);  // gold
+
+        // Shared header
+        Component header = Component.literal("")
+                .append(Component.literal("=== ")
+                        .withStyle(style -> style.withColor(headerFrameColor)))
+                .append(Component.literal("Borders Update")
+                        .withStyle(style -> style.withColor(headerTextColor)))
+                .append(Component.literal(" ===")
+                        .withStyle(style -> style.withColor(headerFrameColor)));
+
+        // Pick a random pair from the failsafe pool
+        String[] pair = FAILSAFE_MESSAGES[
+                BordersMod.RANDOM.nextInt(FAILSAFE_MESSAGES.length)
+                ];
+
+        String line2Text = pair[0];
+        String line3Text = pair[1];
+
+        Component line2 = Component.literal(line2Text)
+                .withStyle(style -> style.withColor(line2Color));
+
+        Component line3 = Component.literal(line3Text)
+                .withStyle(style -> style.withColor(line3Color));
+
+        return new Component[] { header, line2, line3 };
     }
 }
