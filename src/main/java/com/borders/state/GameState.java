@@ -31,6 +31,17 @@ public class GameState {
     /** Current border size (diameter, in blocks). */
     public double currentBorderSize = 16.0;
 
+    /**
+     * How many blocks to add on each side of the border for every new item discovery.
+     *
+     * Example:
+     *  - discoveryGrowthBlocksPerSide = 1  -> +1 block each side (2 blocks total diameter)
+     *  - discoveryGrowthBlocksPerSide = 4  -> +4 blocks each side (8 blocks total diameter)
+     *
+     * This is controlled at runtime via /borders setgrowth <blocksPerSide>.
+     */
+    public int discoveryGrowthBlocksPerSide = 1;
+
     /** Whether the border has been initialized around the first player's chunk. */
     public boolean BORDER_INITIALIZED = false;
 

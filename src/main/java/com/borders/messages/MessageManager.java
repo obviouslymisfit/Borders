@@ -102,6 +102,7 @@ public class MessageManager {
      * @param centerX                 World border center X
      * @param centerZ                 World border center Z
      * @param discoveredCount         Number of unique items discovered
+     * @param growthBlocksPerSide     Blocks added on each side per discovery
      * @param failsafeDelaySeconds    Configured failsafe delay in seconds
      * @param secondsSinceDiscovery   Seconds since last discovery
      * @return An array of Components, each to be sent as a separate chat line
@@ -113,6 +114,7 @@ public class MessageManager {
             double centerX,
             double centerZ,
             int discoveredCount,
+            int growthBlocksPerSide,
             long failsafeDelaySeconds,
             long secondsSinceDiscovery
     ) {
@@ -177,6 +179,15 @@ public class MessageManager {
                 .append(Component.literal(String.valueOf(discoveredCount))
                         .withStyle(style -> style.withColor(valueNumberColor)));
 
+        // Growth per discovery line
+        Component growthLine = Component.literal("")
+                .append(Component.literal("Growth per discovery: ")
+                        .withStyle(style -> style.withColor(labelColor)))
+                .append(Component.literal(String.valueOf(growthBlocksPerSide))
+                        .withStyle(style -> style.withColor(valueNumberColor)))
+                .append(Component.literal(" blocks/side")
+                        .withStyle(style -> style.withColor(grayColor)));
+
         // Failsafe delay
         Component failsafeDelayLine = Component.literal("")
                 .append(Component.literal("Failsafe delay: ")
@@ -198,6 +209,7 @@ public class MessageManager {
                 borderLine,
                 centerLine,
                 discoveriesLine,
+                growthLine,
                 failsafeDelayLine,
                 lastDiscoveryLine
         };

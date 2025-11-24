@@ -91,6 +91,32 @@ public class CommandManager {
                         )
 
                         // ------------------------------------------------------------
+                        // /borders setgrowth <blocksPerSide>
+                        // ------------------------------------------------------------
+                        .then(Commands.literal("setgrowth")
+                                .then(Commands.argument("blocksPerSide", IntegerArgumentType.integer(1))
+                                        .executes(ctx -> {
+                                            int perSide = IntegerArgumentType.getInteger(ctx, "blocksPerSide");
+
+                                            BordersMod.STATE.discoveryGrowthBlocksPerSide = perSide;
+
+                                            int diameter = perSide * 2;
+
+                                            ctx.getSource().sendSystemMessage(
+                                                    Component.literal("[Borders] Discovery growth set to ")
+                                                            .append(Component.literal(String.valueOf(perSide))
+                                                                    .withStyle(style -> style.withColor(0xFFD700)))
+                                                            .append(Component.literal(" blocks per side ("))
+                                                            .append(Component.literal(String.valueOf(diameter))
+                                                                    .withStyle(style -> style.withColor(0xFFD700)))
+                                                            .append(Component.literal(" diameter per discovery)."))
+                                            );
+                                            return 1;
+                                        })
+                                )
+                        )
+
+                        // ------------------------------------------------------------
                         // /borders grow <blocks>
                         // ------------------------------------------------------------
                         .then(Commands.literal("grow")
@@ -261,6 +287,7 @@ public class CommandManager {
                             long failsafeDelaySeconds = failsafeDelayTicks / 20L;
 
                             int discoveredCount = BordersMod.STATE.OBTAINED_ITEMS.size();
+                            int growthBlocksPerSide = BordersMod.STATE.discoveryGrowthBlocksPerSide;
 
                             Component[] lines = MessageManager.buildInfoMessages(
                                     gameActive,
@@ -269,6 +296,7 @@ public class CommandManager {
                                     centerX,
                                     centerZ,
                                     discoveredCount,
+                                    growthBlocksPerSide,
                                     failsafeDelaySeconds,
                                     secondsSinceLastDiscovery
                             );

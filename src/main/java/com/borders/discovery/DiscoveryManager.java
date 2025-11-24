@@ -71,14 +71,20 @@ public class DiscoveryManager {
         if (BordersMod.STATE.BORDER_INITIALIZED) {
             ServerLevel level = (ServerLevel) player.level();
 
+            // Convert "blocks per side" into a diameter change for the world border
+            int perSide = BordersMod.STATE.discoveryGrowthBlocksPerSide;
+            double diameterDelta = perSide * 2.0;
+
             BordersMod.STATE.currentBorderSize = BorderManager.changeBorderSize(
                     level,
                     BordersMod.STATE.currentBorderSize,
-                    2.0
+                    diameterDelta
             );
 
             BordersMod.LOGGER.info(
-                    "World border expanded to size {}",
+                    "World border expanded by {} blocks per side ({} diameter). New size: {}",
+                    perSide,
+                    diameterDelta,
                     BordersMod.STATE.currentBorderSize
             );
         }
