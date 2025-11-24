@@ -2,6 +2,7 @@ package com.borders.commands;
 
 import com.borders.BordersMod;
 import com.borders.border.BorderManager;
+import com.borders.messages.MessageManager;
 import com.borders.scoreboard.ScoreboardManager;
 
 import com.mojang.brigadier.CommandDispatcher;
@@ -226,6 +227,55 @@ public class CommandManager {
                             ctx.getSource().sendSystemMessage(
                                     Component.literal("[Borders] Game reset: border, items, and inventories cleared.")
                             );
+
+                            return 1;
+                        }))
+
+                        // ------------------------------------------------------------
+                        // /borders info
+                        // ------------------------------------------------------------
+                        .then(Commands.literal("info").executes(ctx -> {
+                            MinecraftServer server = ctx.getSource().getServer();
+                            ServerLevel overworld = server.getLevel(Level.OVERWORLD);
+
+                            if (overworld == null) {
+                                ctx.getSource().sendSystemMessage(
+                                        Component.literal("[Borders] Overworld not available.")
+                                );
+                                return 0;
+                            }
+
+                            boolean gameActive = BordersMod.STATE.gameActive;
+                            boolean failsafeEnabled = BordersMod.STATE.failsafeEnabled;
+
+                            double borderSize = BordersMod.STATE.currentBorderSize;
+                            double centerX = overworld.getWorldBorder().getCenterX();
+                            double centerZ = overworld.getWorldBorder().getCenterZ();
+
+                            long globalTick = BordersMod.STATE.globalTick;
+                            long lastDiscoveryTick = BordersMod.STATE.lastDiscoveryTick;
+                            long ticksSinceLastDiscovery = Math.max(0L, globalTick - lastDiscoveryTick);
+                            long secondsSinceLastDiscovery = ticksSinceLastDiscovery / 20L;
+
+                            long failsafeDelayTicks = BordersMod.STATE.borderFailsafeDelayTicks;
+                            long failsafeDelaySeconds = failsafeDelayTicks / 20L;
+
+                            int discoveredCount = BordersMod.STATE.OBTAINED_ITEMS.size();
+
+                            Component[] lines = MessageManager.buildInfoMessages(
+                                    gameActive,
+                                    failsafeEnabled,
+                                    borderSize,
+                                    centerX,
+                                    centerZ,
+                                    discoveredCount,
+                                    failsafeDelaySeconds,
+                                    secondsSinceLastDiscovery
+                            );
+
+                            for (Component line : lines) {
+                                ctx.getSource().sendSystemMessage(line);
+                            }
 
                             return 1;
                         }))

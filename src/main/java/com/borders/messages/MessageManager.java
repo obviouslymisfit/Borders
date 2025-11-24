@@ -10,6 +10,7 @@ import net.minecraft.network.chat.TextColor;
  * Right now this focuses on:
  *  - Randomized flavor text when a new item is discovered
  *  - Colored player name and item name formatting
+ *  - Nicely formatted info messages for /borders info
  */
 public class MessageManager {
 
@@ -85,5 +86,120 @@ public class MessageManager {
                                 .withStyle(style -> style.withColor(TextColor.fromRgb(0xFFD700)))
                 )
                 .append(Component.literal("! " + suffix));
+    }
+
+    /**
+     * Builds the set of info lines used by /borders info.
+     *
+     * Style B:
+     *  - Header: aqua frame
+     *  - Labels: blue / aqua
+     *  - Values: yellow for numbers, green/red for status
+     *
+     * @param gameActive              Whether the Borders game is active
+     * @param failsafeEnabled         Whether the failsafe is enabled
+     * @param borderSize              Current border size (diameter)
+     * @param centerX                 World border center X
+     * @param centerZ                 World border center Z
+     * @param discoveredCount         Number of unique items discovered
+     * @param failsafeDelaySeconds    Configured failsafe delay in seconds
+     * @param secondsSinceDiscovery   Seconds since last discovery
+     * @return An array of Components, each to be sent as a separate chat line
+     */
+    public static Component[] buildInfoMessages(
+            boolean gameActive,
+            boolean failsafeEnabled,
+            double borderSize,
+            double centerX,
+            double centerZ,
+            int discoveredCount,
+            long failsafeDelaySeconds,
+            long secondsSinceDiscovery
+    ) {
+        TextColor headerFrameColor = TextColor.fromRgb(0x00CCCC);  // aqua-ish
+        TextColor headerTextColor  = TextColor.fromRgb(0x00FFFF);  // bright aqua
+        TextColor labelColor       = TextColor.fromRgb(0x00AAAA);  // dark aqua / blue
+        TextColor valueNumberColor = TextColor.fromRgb(0xFFD700);  // gold
+        TextColor valueNeutralColor= TextColor.fromRgb(0xFFFFFF);  // white
+        TextColor greenColor       = TextColor.fromRgb(0x55FF55);  // status: yes/on
+        TextColor redColor         = TextColor.fromRgb(0xFF5555);  // status: no/off;
+        TextColor grayColor        = TextColor.fromRgb(0xAAAAAA);  // parentheses, etc.
+
+        // Header: === Borders Info ===
+        Component header = Component.literal("")
+                .append(Component.literal("=== ")
+                        .withStyle(style -> style.withColor(headerFrameColor)))
+                .append(Component.literal("Borders Info")
+                        .withStyle(style -> style.withColor(headerTextColor)))
+                .append(Component.literal(" ===")
+                        .withStyle(style -> style.withColor(headerFrameColor)));
+
+        // Game active line
+        Component gameActiveLine = Component.literal("")
+                .append(Component.literal("Game active: ")
+                        .withStyle(style -> style.withColor(labelColor)))
+                .append(Component.literal(gameActive ? "Yes" : "No")
+                        .withStyle(style -> style.withColor(gameActive ? greenColor : redColor)));
+
+        // Failsafe line
+        Component failsafeLine = Component.literal("")
+                .append(Component.literal("Failsafe: ")
+                        .withStyle(style -> style.withColor(labelColor)))
+                .append(Component.literal(failsafeEnabled ? "Enabled" : "Disabled")
+                        .withStyle(style -> style.withColor(failsafeEnabled ? greenColor : redColor)));
+
+        // Border size line
+        Component borderLine = Component.literal("")
+                .append(Component.literal("Border: ")
+                        .withStyle(style -> style.withColor(labelColor)))
+                .append(Component.literal(String.valueOf(borderSize))
+                        .withStyle(style -> style.withColor(valueNumberColor)))
+                .append(Component.literal(" (diameter)")
+                        .withStyle(style -> style.withColor(grayColor)));
+
+        // Center line
+        Component centerLine = Component.literal("")
+                .append(Component.literal("Center: ")
+                        .withStyle(style -> style.withColor(labelColor)))
+                .append(Component.literal("X=")
+                        .withStyle(style -> style.withColor(grayColor)))
+                .append(Component.literal(String.valueOf(centerX))
+                        .withStyle(style -> style.withColor(valueNumberColor)))
+                .append(Component.literal(" Z=")
+                        .withStyle(style -> style.withColor(grayColor)))
+                .append(Component.literal(String.valueOf(centerZ))
+                        .withStyle(style -> style.withColor(valueNumberColor)));
+
+        // Discoveries line
+        Component discoveriesLine = Component.literal("")
+                .append(Component.literal("Discoveries: ")
+                        .withStyle(style -> style.withColor(labelColor)))
+                .append(Component.literal(String.valueOf(discoveredCount))
+                        .withStyle(style -> style.withColor(valueNumberColor)));
+
+        // Failsafe delay
+        Component failsafeDelayLine = Component.literal("")
+                .append(Component.literal("Failsafe delay: ")
+                        .withStyle(style -> style.withColor(labelColor)))
+                .append(Component.literal(failsafeDelaySeconds + "s")
+                        .withStyle(style -> style.withColor(valueNumberColor)));
+
+        // Since last discovery
+        Component lastDiscoveryLine = Component.literal("")
+                .append(Component.literal("Since last discovery: ")
+                        .withStyle(style -> style.withColor(labelColor)))
+                .append(Component.literal(secondsSinceDiscovery + "s")
+                        .withStyle(style -> style.withColor(valueNumberColor)));
+
+        return new Component[] {
+                header,
+                gameActiveLine,
+                failsafeLine,
+                borderLine,
+                centerLine,
+                discoveriesLine,
+                failsafeDelayLine,
+                lastDiscoveryLine
+        };
     }
 }
