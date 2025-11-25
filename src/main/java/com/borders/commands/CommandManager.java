@@ -73,6 +73,7 @@ public class CommandManager {
 
                         // ------------------------------------------------------------
                         // /borders settimer <seconds>
+                        // (inactivity / failsafe delay)
                         // ------------------------------------------------------------
                         .then(Commands.literal("settimer")
                                 .then(Commands.argument("seconds", IntegerArgumentType.integer(0))
@@ -93,6 +94,7 @@ public class CommandManager {
 
                         // ------------------------------------------------------------
                         // /borders setgrowth <blocksPerSide>
+                        // (growth per new unique item)
                         // ------------------------------------------------------------
                         .then(Commands.literal("setgrowth")
                                 .then(Commands.argument("blocksPerSide", IntegerArgumentType.integer(1))
@@ -119,6 +121,7 @@ public class CommandManager {
 
                         // ------------------------------------------------------------
                         // /borders setdeathshrink <blocksPerSide>
+                        // (shrink per player death)
                         // ------------------------------------------------------------
                         .then(Commands.literal("setdeathshrink")
                                 .then(Commands.argument("blocksPerSide", IntegerArgumentType.integer(1))
@@ -144,6 +147,7 @@ public class CommandManager {
 
                         // ------------------------------------------------------------
                         // /borders toggledeathshrink
+                        // (enable/disable death shrink mechanic)
                         // ------------------------------------------------------------
                         .then(Commands.literal("toggledeathshrink")
                                 .executes(ctx -> {
@@ -165,6 +169,7 @@ public class CommandManager {
 
                         // ------------------------------------------------------------
                         // /borders grow <blocks>
+                        // (manual border grow)
                         // ------------------------------------------------------------
                         .then(Commands.literal("grow")
                                 .then(Commands.argument("blocks", IntegerArgumentType.integer(1))
@@ -207,6 +212,7 @@ public class CommandManager {
 
                         // ------------------------------------------------------------
                         // /borders shrink <blocks>
+                        // (manual border shrink)
                         // ------------------------------------------------------------
                         .then(Commands.literal("shrink")
                                 .then(Commands.argument("blocks", IntegerArgumentType.integer(1))
