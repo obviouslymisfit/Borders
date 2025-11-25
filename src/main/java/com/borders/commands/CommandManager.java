@@ -72,6 +72,32 @@ public class CommandManager {
                         }))
 
                         // ------------------------------------------------------------
+                        // /borders reload
+                        // Rebuilds scoreboard + reapplies borders in all dimensions.
+                        // ------------------------------------------------------------
+                        .then(Commands.literal("reload").executes(ctx -> {
+                            MinecraftServer server = ctx.getSource().getServer();
+
+                            // Rebuild / ensure the discovery objective + border size line
+                            ScoreboardManager.getOrCreateDiscoveryObjective(server);
+                            ScoreboardManager.updateBorderSizeLine(server);
+
+                            // Re-apply borders if we’ve ever initialized them
+                            if (BordersMod.STATE.BORDER_INITIALIZED) {
+                                BorderManager.applyBorderToAllDimensions(server);
+                                ctx.getSource().sendSystemMessage(
+                                        Component.literal("[Borders] Borders and scoreboard reloaded.")
+                                );
+                            } else {
+                                ctx.getSource().sendSystemMessage(
+                                        Component.literal("[Borders] Border not initialized yet — nothing to reload.")
+                                );
+                            }
+
+                            return 1;
+                        }))
+
+                        // ------------------------------------------------------------
                         // /borders settimer <seconds>
                         // (inactivity / failsafe delay)
                         // ------------------------------------------------------------
