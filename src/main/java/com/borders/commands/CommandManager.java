@@ -40,6 +40,17 @@ public class CommandManager {
                         .requires(source -> source.hasPermission(2))  // OP-only
 
                         // ------------------------------------------------------------
+                        // /borders help
+                        // ------------------------------------------------------------
+                        .then(Commands.literal("help").executes(ctx -> {
+                            Component[] lines = MessageManager.buildHelpMessages();
+                            for (Component line : lines) {
+                                ctx.getSource().sendSystemMessage(line);
+                            }
+                            return 1;
+                        }))
+
+                        // ------------------------------------------------------------
                         // /borders start
                         // ------------------------------------------------------------
                         .then(Commands.literal("start").executes(ctx -> {

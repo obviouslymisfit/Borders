@@ -12,7 +12,8 @@ import net.minecraft.network.chat.TextColor;
  *  - Randomized flavor text when a new item is discovered
  *  - Failsafe (inactivity) border expansions
  *  - Info panels for /borders info
- *  - Death-triggered border shrink messages (v1.3+)
+ *  - Death-triggered border shrink messages
+ *  - Help panel for /borders help
  *  - Colored player/item formatting
  */
 public class MessageManager {
@@ -161,7 +162,7 @@ public class MessageManager {
     }
 
     // ---------------------------------------------------------------------
-    // Death-triggered border shrink messages (v1.3+)
+    // Death-triggered border shrink messages
     // ---------------------------------------------------------------------
 
     /**
@@ -327,5 +328,152 @@ public class MessageManager {
                 failsafeLine,
                 lastDiscovery
         };
+    }
+
+    // ---------------------------------------------------------------------
+    // /borders help panel
+    // ---------------------------------------------------------------------
+
+    /**
+     * Builds the help output for /borders help.
+     *
+     * Groups commands into:
+     *  - Core
+     *  - Configuration
+     *  - Manual border control
+     */
+    public static Component[] buildHelpMessages() {
+        Component header = Component.literal("=== Borders Commands ===")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x00FFFF)) // aqua
+                        .withBold(true)
+                );
+
+        Component usage = Component.literal("Usage: ")
+                .withStyle(style -> style.withColor(0xAAAAAA))
+                .append(
+                        Component.literal("/borders <command> [args]")
+                                .withStyle(style -> style.withColor(0xFFD700))
+                );
+
+        Component blank = Component.literal("");
+
+        // Core commands
+        Component coreHeader = Component.literal("Core")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF))
+                        .withBold(true)
+                );
+
+        Component startLine = helpLine(
+                "/borders start",
+                "Start the Borders game; enable expansion and inactivity growth."
+        );
+
+        Component stopLine = helpLine(
+                "/borders stop",
+                "Stop the Borders game; freeze automatic expansion."
+        );
+
+        Component resetLine = helpLine(
+                "/borders reset",
+                "Reset border, items, inventories, and game state."
+        );
+
+        Component infoLine = helpLine(
+                "/borders info",
+                "Show detailed status of the border and game configuration."
+        );
+
+        Component reloadLine = helpLine(
+                "/borders reload",
+                "Resync borders in all dimensions and rebuild the scoreboard."
+        );
+
+        // Configuration commands
+        Component configHeader = Component.literal("Configuration")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF))
+                        .withBold(true)
+                );
+
+        Component growthLine = helpLine(
+                "/borders setgrowth <blocksPerSide>",
+                "Set growth per new unique item (per side; diameter = x2)."
+        );
+
+        Component deathShrinkLine = helpLine(
+                "/borders setdeathshrink <blocksPerSide>",
+                "Set shrink per player death (per side; diameter = x2)."
+        );
+
+        Component toggleDeathLine = helpLine(
+                "/borders toggledeathshrink",
+                "Enable or disable border shrinking when players die."
+        );
+
+        Component timerLine = helpLine(
+                "/borders settimer <seconds>",
+                "Set inactivity time before automatic border expansion."
+        );
+
+        // Manual border control
+        Component manualHeader = Component.literal("Manual Border Control")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF))
+                        .withBold(true)
+                );
+
+        Component growLine = helpLine(
+                "/borders grow <blocksPerSide>",
+                "Manually grow border by this many blocks on each side."
+        );
+
+        Component shrinkLine = helpLine(
+                "/borders shrink <blocksPerSide>",
+                "Manually shrink border by this many blocks on each side."
+        );
+
+        return new Component[] {
+                header,
+                usage,
+                blank,
+
+                coreHeader,
+                startLine,
+                stopLine,
+                resetLine,
+                infoLine,
+                reloadLine,
+                blank,
+
+                configHeader,
+                growthLine,
+                deathShrinkLine,
+                toggleDeathLine,
+                timerLine,
+                blank,
+
+                manualHeader,
+                growLine,
+                shrinkLine
+        };
+    }
+
+    /**
+     * Small helper to format a colored "/command" + gray description line.
+     */
+    private static Component helpLine(String command, String description) {
+        return Component.literal("")
+                .append(
+                        Component.literal(command)
+                                .withStyle(style -> style.withColor(0xFFD700)) // gold for command
+                )
+                .append(Component.literal(" - ")
+                        .withStyle(style -> style.withColor(0xAAAAAA)))
+                .append(
+                        Component.literal(description)
+                                .withStyle(style -> style.withColor(0xCCCCCC))
+                );
     }
 }
