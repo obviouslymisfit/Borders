@@ -12,7 +12,7 @@ import net.minecraft.network.chat.TextColor;
  *  - Randomized flavor text when a new item is discovered
  *  - Failsafe (inactivity) border expansions
  *  - Info panels for /borders info
- *  - Death-triggered border shrink messages (v1.3)
+ *  - Death-triggered border shrink messages (v1.3+)
  *  - Colored player/item formatting
  */
 public class MessageManager {
@@ -161,7 +161,7 @@ public class MessageManager {
     }
 
     // ---------------------------------------------------------------------
-    // Death-triggered border shrink messages (v1.3)
+    // Death-triggered border shrink messages (v1.3+)
     // ---------------------------------------------------------------------
 
     /**
@@ -202,6 +202,12 @@ public class MessageManager {
 
     /**
      * Builds the info output for /borders info.
+     *
+     * Grouped layout:
+     *  - Header
+     *  - Status
+     *  - Growth & Shrink
+     *  - Inactivity
      */
     public static Component[] buildInfoMessages(
             boolean gameActive,
@@ -216,55 +222,110 @@ public class MessageManager {
             boolean deathShrinkEnabled,
             int deathShrinkBlocksPerSide
     ) {
+        // Header
         Component header = Component.literal("=== Borders Info ===")
                 .withStyle(style -> style
                         .withColor(TextColor.fromRgb(0x00FFFF)) // aqua
                         .withBold(true)
                 );
 
-        Component status = Component.literal("Game: ")
-                .append(Component.literal(gameActive ? "ACTIVE" : "INACTIVE")
-                        .withStyle(style -> style.withColor(gameActive ? 0x00FF00 : 0xFF5555)));
+        // Blank line
+        Component blank = Component.literal("");
 
-        Component borderLine = Component.literal("Border size: ")
-                .append(Component.literal(String.valueOf((int) Math.round(borderSize)))
-                        .withStyle(style -> style.withColor(0xFFD700)))
-                .append(Component.literal(" (center: " + (int) centerX + ", " + (int) centerZ + ")"));
+        // ---------------- STATUS ----------------
+        Component statusHeader = Component.literal("Status")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF))
+                        .withBold(true)
+                );
 
-        Component discoveries = Component.literal("Unique items discovered: ")
-                .append(Component.literal(String.valueOf(discoveredCount))
-                        .withStyle(style -> style.withColor(0x7FCC19)));
+        Component statusLine = Component.literal("Game: ")
+                .append(
+                        Component.literal(gameActive ? "ACTIVE" : "INACTIVE")
+                                .withStyle(style -> style.withColor(gameActive ? 0x00FF00 : 0xFF5555))
+                );
 
-        Component growth = Component.literal("Growth per discovery: ")
-                .append(Component.literal(growthBlocksPerSide + " blocks per side")
-                        .withStyle(style -> style.withColor(0xFFD700)));
+        Component borderLine = Component.literal("Border: ")
+                .append(
+                        Component.literal(String.valueOf((int) Math.round(borderSize)))
+                                .withStyle(style -> style.withColor(0xFFD700))
+                )
+                .append(Component.literal(" blocks "))
+                .append(
+                        Component.literal("(center " + (int) centerX + ", " + (int) centerZ + ")")
+                                .withStyle(style -> style.withColor(0xAAAAAA))
+                );
 
-        Component failsafeLine = Component.literal("Inactivity expansion: ")
-                .append(Component.literal(failsafeEnabled ? "ON" : "OFF")
-                        .withStyle(style -> style.withColor(failsafeEnabled ? 0x00FF00 : 0xFF5555)))
+        Component discoveries = Component.literal("Unique items: ")
+                .append(
+                        Component.literal(String.valueOf(discoveredCount))
+                                .withStyle(style -> style.withColor(0x7FCC19))
+                );
+
+        // ---------------- GROWTH & SHRINK ----------------
+        Component growthHeader = Component.literal("Growth & Shrink")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF))
+                        .withBold(true)
+                );
+
+        Component growth = Component.literal("On discovery: ")
+                .append(
+                        Component.literal("+" + growthBlocksPerSide + " blocks per side")
+                                .withStyle(style -> style.withColor(0xFFD700))
+                );
+
+        Component deathShrinkLine = Component.literal("On death: ")
+                .append(
+                        Component.literal(
+                                (deathShrinkEnabled ? "-" : "– ") + deathShrinkBlocksPerSide + " blocks per side"
+                        ).withStyle(style -> style.withColor(0xFFAA00))
+                )
+                .append(Component.literal(" ("))
+                .append(
+                        Component.literal(deathShrinkEnabled ? "ENABLED" : "DISABLED")
+                                .withStyle(style -> style.withColor(deathShrinkEnabled ? 0x00FF00 : 0xFF5555))
+                )
+                .append(Component.literal(")"));
+
+        // ---------------- INACTIVITY ----------------
+        Component inactivityHeader = Component.literal("Inactivity")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF))
+                        .withBold(true)
+                );
+
+        Component failsafeLine = Component.literal("Auto-expand: ")
+                .append(
+                        Component.literal(failsafeEnabled ? "ON" : "OFF")
+                                .withStyle(style -> style.withColor(failsafeEnabled ? 0x00FF00 : 0xFF5555))
+                )
                 .append(Component.literal(" (after " + failsafeDelaySeconds + "s)"));
 
         Component lastDiscovery = Component.literal("Time since last discovery: ")
-                .append(Component.literal(secondsSinceLastDiscovery + "s")
-                        .withStyle(style -> style.withColor(0xAAAAAA)));
-
-        Component deathShrinkLine = Component.literal("Death shrink: ")
-                .append(Component.literal(deathShrinkEnabled ? "ON" : "OFF")
-                        .withStyle(style -> style.withColor(deathShrinkEnabled ? 0x00FF00 : 0xFF5555)))
-                .append(Component.literal(" ("))
-                .append(Component.literal(deathShrinkBlocksPerSide + " blocks per side")
-                        .withStyle(style -> style.withColor(0xFFAA00)))
-                .append(Component.literal(")"));
+                .append(
+                        Component.literal(secondsSinceLastDiscovery + "s")
+                                .withStyle(style -> style.withColor(0xAAAAAA))
+                );
 
         return new Component[] {
                 header,
-                status,
+                blank,
+
+                statusHeader,
+                statusLine,
                 borderLine,
                 discoveries,
+                blank,
+
+                growthHeader,
                 growth,
+                deathShrinkLine,
+                blank,
+
+                inactivityHeader,
                 failsafeLine,
-                lastDiscovery,
-                deathShrinkLine
+                lastDiscovery
         };
     }
 }
