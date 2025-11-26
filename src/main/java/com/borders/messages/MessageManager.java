@@ -6,6 +6,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
 import com.borders.state.GameState;
 
+import net.minecraft.network.chat.ClickEvent;
+
 /**
  * Handles all chat message construction and formatting for the Borders mod.
  *
@@ -528,6 +530,62 @@ public class MessageManager {
                 .append(Component.literal(" blocks per side"))
                 .withStyle(style -> style.withColor(0xAAAAAA));
 
+        // Preset buttons for /borders setgrowth
+        Component growthPresetsLabel = Component.literal("Presets: ")
+                .withStyle(style -> style.withColor(0xAAAAAA));
+
+        Component growthPreset1 = Component.literal("[1]")
+                .withStyle(style -> style
+                        .withColor(0x00FFFF)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.RunCommand("/borders setgrowth 1"))
+                );
+
+        Component growthPreset2 = Component.literal("[2]")
+                .withStyle(style -> style
+                        .withColor(0x00FFFF)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.RunCommand("/borders setgrowth 2"))
+                );
+
+        Component growthPreset3 = Component.literal("[3]")
+                .withStyle(style -> style
+                        .withColor(0x00FFFF)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.RunCommand("/borders setgrowth 3"))
+                );
+
+        Component growthPreset4 = Component.literal("[4]")
+                .withStyle(style -> style
+                        .withColor(0x00FFFF)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.RunCommand("/borders setgrowth 4"))
+                );
+
+        Component growthPreset5 = Component.literal("[5]")
+                .withStyle(style -> style
+                        .withColor(0x00FFFF)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.RunCommand("/borders setgrowth 5"))
+                );
+
+        Component growthPresetsLine = Component.literal("")
+                .append(growthPresetsLabel)
+                .append(growthPreset1).append(Component.literal(" "))
+                .append(growthPreset2).append(Component.literal(" "))
+                .append(growthPreset3).append(Component.literal(" "))
+                .append(growthPreset4).append(Component.literal(" "))
+                .append(growthPreset5);
+
+        // Custom value (suggests /borders setgrowth <value>)
+        Component growthCustom = Component.literal("[Custom…]")
+                .withStyle(style -> style
+                        .withColor(0xFFFF55) // yellow
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.SuggestCommand("/borders setgrowth "))
+                );
+
+
         // ---------------- DEATH SHRINK ----------------
         Component deathHeader = Component.literal("Shrink on Death")
                 .withStyle(style -> style
@@ -585,6 +643,8 @@ public class MessageManager {
 
                 growthHeader,
                 growthLine,
+                growthPresetsLine,
+                growthCustom,
                 blank,
 
                 deathHeader,
