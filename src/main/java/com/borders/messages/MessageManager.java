@@ -4,6 +4,7 @@ import com.borders.BordersMod;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
+import com.borders.state.GameState;
 
 /**
  * Handles all chat message construction and formatting for the Borders mod.
@@ -459,6 +460,144 @@ public class MessageManager {
                 shrinkLine
         };
     }
+
+    /**
+     * Builds the chat-based configuration panel that is shown
+     * when an OP right-clicks the Borders Control Book.
+     *
+     * v2.1: read-only status + config overview.
+     * Later we will extend this with clickable buttons.
+     */
+    public static Component[] buildConfigPanel(GameState state) {
+        // Derive some values
+        boolean gameActive = state.gameActive;
+        boolean failsafeEnabled = state.failsafeEnabled;
+
+        int borderSize = (int) Math.round(state.currentBorderSize);
+        int growthPerSide = state.discoveryGrowthBlocksPerSide;
+        boolean deathEnabled = state.deathShrinkEnabled;
+        int deathAmount = state.deathShrinkBlocksPerSide;
+
+        long failsafeTicks = state.borderFailsafeDelayTicks;
+        int failsafeSeconds = (int) (failsafeTicks / 20L);
+
+        // Header
+        Component header = Component.literal("=== Borders Configuration ===")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x00FFFF)) // aqua
+                        .withBold(true)
+                );
+
+        Component blank = Component.literal("");
+
+        // ---------------- STATUS ----------------
+        Component statusHeader = Component.literal("Status")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF)) // light aqua
+                        .withBold(true)
+                );
+
+        Component statusLine = Component.literal("Game: ")
+                .append(
+                        Component.literal(gameActive ? "ACTIVE" : "INACTIVE")
+                                .withStyle(style -> style.withColor(
+                                        gameActive ? 0x00FF00 : 0xFF5555
+                                ))
+                );
+
+        Component borderLine = Component.literal("Border size: ")
+                .append(
+                        Component.literal(String.valueOf(borderSize))
+                                .withStyle(style -> style.withColor(0xFFD700)) // gold
+                )
+                .append(Component.literal(" blocks (diameter)"))
+                .withStyle(style -> style.withColor(0xAAAAAA));
+
+        // ---------------- DISCOVERY EXPANSION ----------------
+        Component growthHeader = Component.literal("Discovery Expansion")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF))
+                        .withBold(true)
+                );
+
+        Component growthLine = Component.literal("Growth per new unique item: ")
+                .append(
+                        Component.literal("+" + growthPerSide)
+                                .withStyle(style -> style.withColor(0x00FF00)) // green
+                )
+                .append(Component.literal(" blocks per side"))
+                .withStyle(style -> style.withColor(0xAAAAAA));
+
+        // ---------------- DEATH SHRINK ----------------
+        Component deathHeader = Component.literal("Shrink on Death")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF))
+                        .withBold(true)
+                );
+
+        Component deathStatus = Component.literal("Status: ")
+                .append(
+                        Component.literal(deathEnabled ? "ENABLED" : "DISABLED")
+                                .withStyle(style -> style.withColor(
+                                        deathEnabled ? 0x00FF00 : 0xFF5555
+                                ))
+                );
+
+        Component deathAmountLine = Component.literal("Shrink amount: ")
+                .append(
+                        Component.literal("-" + deathAmount)
+                                .withStyle(style -> style.withColor(0xFF5555)) // red
+                )
+                .append(Component.literal(" blocks per side"))
+                .withStyle(style -> style.withColor(0xAAAAAA));
+
+        // ---------------- INACTIVITY EXPANSION ----------------
+        Component failsafeHeader = Component.literal("Inactivity Expansion")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF))
+                        .withBold(true)
+                );
+
+        Component failsafeStatus = Component.literal("Status: ")
+                .append(
+                        Component.literal(failsafeEnabled ? "ENABLED" : "DISABLED")
+                                .withStyle(style -> style.withColor(
+                                        failsafeEnabled ? 0x00FF00 : 0xFF5555
+                                ))
+                );
+
+        Component failsafeTimer = Component.literal("Timer: ")
+                .append(
+                        Component.literal(String.valueOf(failsafeSeconds))
+                                .withStyle(style -> style.withColor(0x00FF00))
+                )
+                .append(Component.literal(" seconds without discoveries"))
+                .withStyle(style -> style.withColor(0xAAAAAA));
+
+        return new Component[] {
+                header,
+                blank,
+
+                statusHeader,
+                statusLine,
+                borderLine,
+                blank,
+
+                growthHeader,
+                growthLine,
+                blank,
+
+                deathHeader,
+                deathStatus,
+                deathAmountLine,
+                blank,
+
+                failsafeHeader,
+                failsafeStatus,
+                failsafeTimer
+        };
+    }
+
 
     /**
      * Small helper to format a colored "/command" + gray description line.

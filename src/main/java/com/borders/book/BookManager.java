@@ -8,6 +8,10 @@ import net.minecraft.world.item.Items;
 
 import net.minecraft.core.component.DataComponents;
 
+import com.borders.BordersMod;
+import com.borders.messages.MessageManager;
+import com.borders.state.GameState;
+
 
 /**
  * Handles creation and delivery of the Border Control Book.
@@ -57,11 +61,11 @@ public class BookManager {
     /**
      * Opens the Borders configuration UI for the given player.
      *
-     * For v2.1 this will show a chat-based configuration panel.
+     * For v2.1 this shows a chat-based configuration panel.
      * Later we will move the same logic into the book pages themselves.
      */
     public static void openConfigPanel(ServerPlayer player) {
-        // Same permission check as giveAdminBook: OP level 2+
+        // Require permission level 2 (same as /borders commands)
         if (!player.hasPermissions(2)) {
             player.sendSystemMessage(
                     Component.literal("Nice try, adventurer.")
@@ -69,11 +73,20 @@ public class BookManager {
             return;
         }
 
-        // TEMP: debug placeholder – will be replaced with real panel
-        player.sendSystemMessage(
-                Component.literal("[Borders] Config panel would open here (v2.1).")
-        );
+        GameState state = BordersMod.STATE;
+        if (state == null) {
+            player.sendSystemMessage(
+                    Component.literal("[Borders] No game state available.")
+            );
+            return;
+        }
+
+        Component[] lines = MessageManager.buildConfigPanel(state);
+        for (Component line : lines) {
+            player.sendSystemMessage(line);
+        }
     }
+
 
 
     /**
