@@ -55,6 +55,28 @@ public class BookManager {
     }
 
     /**
+     * Opens the Borders configuration UI for the given player.
+     *
+     * For v2.1 this will show a chat-based configuration panel.
+     * Later we will move the same logic into the book pages themselves.
+     */
+    public static void openConfigPanel(ServerPlayer player) {
+        // Same permission check as giveAdminBook: OP level 2+
+        if (!player.hasPermissions(2)) {
+            player.sendSystemMessage(
+                    Component.literal("Nice try, adventurer.")
+            );
+            return;
+        }
+
+        // TEMP: debug placeholder – will be replaced with real panel
+        player.sendSystemMessage(
+                Component.literal("[Borders] Config panel would open here (v2.1).")
+        );
+    }
+
+
+    /**
      * Builds the Border Control Book item.
      *
      * For now this is a minimal written book with:

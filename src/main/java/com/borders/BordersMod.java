@@ -1,5 +1,6 @@
 package com.borders;
 
+import com.borders.book.BookManager;
 import com.borders.border.BorderManager;
 import com.borders.commands.CommandManager;
 import com.borders.discovery.DiscoveryManager;
@@ -19,7 +20,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.border.WorldBorder;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
+
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+
+
 
 /**
  * Main mod entrypoint.
@@ -81,6 +90,31 @@ public class BordersMod implements ModInitializer {
 
 		// Register DeathManager
 		DeathManager.register();
+
+		// Intercept right-clicks on the Border Control Book
+		UseItemCallback.EVENT.register((player, world, hand) -> {
+			ItemStack stack = player.getItemInHand(hand);
+			if (stack.isEmpty()) {
+				return InteractionResult.PASS;
+			}
+
+			// Match the admin config book created by BookManager
+			if (stack.is(Items.WRITABLE_BOOK)
+					&& stack.getHoverName().getString().equals(BookManager.BOOK_TITLE)) {
+
+				if (!world.isClientSide() && player instanceof ServerPlayer serverPlayer) {
+					// Delegate handling to BookManager
+					BookManager.openConfigPanel(serverPlayer);
+				}
+
+
+				// On both sides: we handled this, so block normal book behavior (GUI)
+				return InteractionResult.SUCCESS;
+			}
+
+			return InteractionResult.PASS;
+		});
+
 
 		// Register /borders commands (start, stop, grow, shrink, reset, settimer)
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
