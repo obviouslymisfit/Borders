@@ -1,135 +1,77 @@
 # Borders – Progressive World Border Mod (Fabric)
 
-**Borders** is a small, server-side Fabric mod that turns Minecraft survival into a **progressive exploration challenge**.
+Borders is a lightweight, server-side Fabric mod that turns Minecraft survival into a progressive exploration challenge.
+The world begins inside a tiny border and expands only as players make progress.
 
-The world starts inside a tiny border.  
-As players discover new items, the border expands and more of the world becomes available.  
-Deaths, inactivity, and configuration options all influence how the border behaves.
+## Core Features
 
-This mod is designed for **multiplayer survival servers** that want a focused, challenge-style progression without adding a ton of new content or complexity.
+### World Border Progression
+- World border starts small (16×16).
+- Border expands when players discover **new unique items**.
+- Optional shrink on player death.
+- Automatic border expansion after long periods of inactivity.
+- Border size synchronized across Overworld, Nether, and End.
 
----
+### Config Book (In‑Game Admin UI)
+Operators can run:
+```
+/borders book
+```
+This opens an interactive written book containing:
+- Game control actions
+- Growth/shrink configuration
+- Inactivity timer settings
+- Manual border adjustments
+- Full info and help pages
+- Clickable buttons and page navigation
+- “Back to Home” links on all pages
 
-## 🔍 Core Concept
+### Scoreboard
+Displays:
+- Current border size
+- Player discovery scores
 
-- The **world border starts very small** (16×16 blocks – 1 chunk).
-- Whenever **any player obtains a brand-new item** (first time ever in this world):
-  - The **world border expands** by a configurable amount.
-  - A **global discovery message** is broadcast in chat.
-  - The discovering player gains **+1 point** on a dedicated scoreboard.
-- If **no new items are discovered** for too long:
-  - An **inactivity expansion** automatically expands the border.
-  - A themed message is shown to everyone.
-- If the **death-shrink mechanic** is enabled:
-  - When a player dies, the border **shrinks** by a configurable amount.
-  - A snarky, darkly humorous message announces who screwed everyone.
+### Commands Overview
 
-This mod supports **Overworld, Nether, and End** borders in sync, and is fully controlled via `/borders` commands by server operators.
-
----
-
-## 🧠 Design Goals
-
-- **Simple to understand**
-- **No client mods required**
-- **Lore-friendly**
-- **Minimal but powerful configuration**
-- **Clear feedback for players**
-
----
-
-## ⚙️ Gameplay Mechanics
-
-### World Border
-- Starts at **16×16**.
-- Expands or shrinks based on discoveries or deaths.
-- Synced across **all dimensions**.
-
-### Item Discovery → Border Growth
-- Each *unique* item discovered = border expands.
-- Expansion per side is configurable.
-
-### Death → Border Shrink (Optional)
-- Border shrinks when a player dies (toggleable).
-- Snarky message included.
-
-### Inactivity → Automatic Growth
-- If no discoveries for X seconds -> border expands automatically.
-- Broadcast message included.
-
----
-
-## 🌍 Dimensions
-
-- **Overworld** – primary logic
-- **Nether** – synced border size
-- **End** – synced border size
-
----
-
-## 📊 Scoreboard
-
-Sidebar scoreboard tracks:
-
-- Number of unique items found per player
-- Current border size (informational line)
-
----
-
-## 🧾 Commands
-
-### `/borders help`
-Shows all commands, formatted.
-
-### Core Commands
+**Core**
 - `/borders start`
 - `/borders stop`
 - `/borders reset`
 - `/borders info`
 - `/borders reload`
 
-### Configuration
+**Configuration**
 - `/borders setgrowth <blocksPerSide>`
 - `/borders setdeathshrink <blocksPerSide>`
 - `/borders toggledeathshrink`
 - `/borders settimer <seconds>`
 
-### Manual Border Control
+**Manual Control**
 - `/borders grow <blocksPerSide>`
 - `/borders shrink <blocksPerSide>`
 
----
+**Utility**
+- `/borders help`
+- `/borders book`
 
-## 🧬 Architecture Overview
+## Architecture Overview
+- BorderManager
+- CommandManager
+- DiscoveryManager
+- DeathManager
+- FailsafeManager
+- ScoreboardManager
+- MessageManager
+- InventoryTracker
+- BookManager
+- Global state container: `GameState`
 
-Managers:
-- `BorderManager`
-- `CommandManager`
-- `DiscoveryManager`
-- `FailsafeManager`
-- `DeathManager`
-- `InventoryTracker`
-- `ScoreboardManager`
-- `MessageManager`
-
-One global mutable state container:
-- `GameState`
-
----
-
-## 📦 Installation
-
-Server-side only.  
-Requires:
+## Installation
+Server‑side only. Requires:
 - Fabric Loader
 - Fabric API
 
-Drop the JAR into your server's `mods` folder.
+Place the mod JAR into your server's `mods` folder.
 
----
-
-## 📝 License
-
+## License
 See `LICENSE`.
-
----

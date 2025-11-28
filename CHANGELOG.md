@@ -4,6 +4,38 @@ Dates intentionally omitted.
 
 ---
 
+## [2.1]
+### Added
+- **Borders Configuration Book** (`/borders book`):
+  - Fully interactive written book UI for server operators.
+  - Section-based navigation with clickable page jumps.
+  - Dedicated pages for:
+    - Game Control
+    - Discovery expansion settings
+    - Death-shrink settings
+    - Inactivity timer configuration
+    - Manual border grow/shrink tools
+    - Info & utility commands
+  - Clickable buttons for:
+    - `/borders start`, `/borders stop`, `/borders reset`, `/borders reload`
+    - `/borders setgrowth`, `/borders setdeathshrink`, `/borders settimer`
+    - `/borders grow`, `/borders shrink`
+    - `/borders info`, `/borders help`
+  - “Back to Home” navigation links on all subpages.
+- Greatly expanded broadcast message pools for:
+  - Item discovery
+  - Inactivity expansions
+  - Player death shrink events
+
+### Changed
+- BookManager now builds a fully resolved written book using the
+  `WRITTEN_BOOK_CONTENT` data component.
+- Page layout, colors, and formatting applied consistently across all book pages.
+- MessageManager updated with expanded flavor text for broadcasts.
+
+---
+
+
 ## [1.4]
 ### Added
 - Full `/borders help` command with categorized sections:

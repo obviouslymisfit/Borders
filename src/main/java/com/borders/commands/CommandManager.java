@@ -4,6 +4,7 @@ import com.borders.BordersMod;
 import com.borders.border.BorderManager;
 import com.borders.messages.MessageManager;
 import com.borders.scoreboard.ScoreboardManager;
+import com.borders.book.BookManager;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -414,6 +415,24 @@ public class CommandManager {
 
                             return 1;
                         }))
+                        // ------------------------------------------------------------
+                        // /borders book
+                        // ------------------------------------------------------------
+                        .then(Commands.literal("book").executes(ctx -> {
+                            CommandSourceStack source = ctx.getSource();
+
+                            if (!(source.getEntity() instanceof ServerPlayer player)) {
+                                source.sendSystemMessage(
+                                        Component.literal("[Borders] Only players can use /borders book.")
+                                );
+                                return 0;
+                            }
+
+                            // BookManager enforces OP-only and "Nice try, adventurer." for non-OPs
+                            BookManager.giveAdminBook(player);
+                            return 1;
+                        }))
+
         );
     }
 }

@@ -4,6 +4,9 @@ import com.borders.BordersMod;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
+import com.borders.state.GameState;
+
+import net.minecraft.network.chat.ClickEvent;
 
 /**
  * Handles all chat message construction and formatting for the Borders mod.
@@ -53,7 +56,42 @@ public class MessageManager {
             "World: “oh crap, they found something — expand!!”",
             "The border ran away a bit.",
             "Another discovery? Border yeets outward.",
-            "One more item and the world needs therapy."
+            "One more item and the world needs therapy.",
+            "The world sighs… fine, take some more land.",
+            "Border panics and scoots back again!",
+            "The realm stretches like it just woke up.",
+            "Another discovery? The world nervously expands.",
+            "World admins have approved more terrain.",
+            "The border retreats in pure confusion.",
+            "You poke the world. It grows defensively.",
+            "The map got stage fright and backed up.",
+            "The world mutters something and widens.",
+            "Terrain gods say: ‘enlarge that thing.’",
+            "Border: ‘not this again…’ *moves away*.",
+            "The world reluctantly reveals more secrets.",
+            "Another item? Border immediately regrets its life choices.",
+            "The world levels up out of peer pressure.",
+            "Reality stretches like cheap fabric.",
+            "The border steps back to avoid eye contact.",
+            "Terrain expands for dramatic effect.",
+            "Another victory for exploration… another loss for the border.",
+            "The world grows because you kept insisting.",
+            "Border moves aside like: ‘after you…’.",
+            "Space-time flinches and expands a bit.",
+            "The world bloats with newfound confidence.",
+            "Your discovery startled the map.",
+            "The border shuffles embarrassingly out of the way.",
+            "World whispers: ‘okay okay, here’s more land.’",
+            "The realm stretches like dough in clumsy hands.",
+            "Border evacuates the area.",
+            "The map widens out of pure intimidation.",
+            "The world expands… again… someone stop this player.",
+            "Border flees the scene dramatically.",
+            "Another item? The map unlocks panic mode expansion.",
+            "The world just rage-expanded.",
+            "Reality taps out and grows a size.",
+            "Border tries to stand its ground and fails.",
+
     };
 
     /**
@@ -69,7 +107,28 @@ public class MessageManager {
             "Inactivity detected. Border expands just to break the silence.",
             "The world twitches from boredom and grows a bit.",
             "Nothing new? The border takes a lazy step back.",
-            "The realm nudges its walls outward, waiting for you to wake up."
+            "The realm nudges its walls outward, waiting for you to wake up.",
+            "Nobody found anything new, so the world yawns and stretches again.",
+            "The border moves on its own, just to stay entertained.",
+            "The realm expands out of pure boredom.",
+            "Quiet day… so the world pushes the border for fun.",
+            "No discoveries detected. Border drifts outward anyway.",
+            "The world shrugs and grows a little for no reason.",
+            "Border slides back because absolutely nothing was happening.",
+            "The realm stretches like it's trying to stay awake.",
+            "Nothing going on, so the map widens out of habit.",
+            "The world fidgets and expands a bit.",
+            "Still silence… border decides to relocate itself.",
+            "The realm grows because it's tired of waiting on you.",
+            "The world gets restless and shifts the border.",
+            "No action? Border moves out of sheer awkwardness.",
+            "Terrain expands on auto-pilot.",
+            "The world sighs dramatically and grows a tile.",
+            "Still no discoveries? Border wanders off.",
+            "The realm pokes itself and stretches.",
+            "Nothing? Fine. The world does the expanding for you.",
+            "Border inches away from boredom.",
+
     };
 
     /**
@@ -89,7 +148,28 @@ public class MessageManager {
             "embraced the void. The realm shrinks in awkward silence.",
             "took a skill issue to the face. The border pulls closer.",
             "met the respawn screen. The world reels the walls in.",
-            "ran out of hearts. The border tightens like a stress ball."
+            "ran out of hearts. The border tightens like a stress ball.",
+            "took a reality slap. The world shrinks in disbelief.",
+            "got folded instantly. The border backs up nervously.",
+            "failed the vibe check. The realm contracts out of sympathy.",
+            "respawned unplanned. The border reels inward.",
+            "got clapped by physics. The world tightens in concern.",
+            "got combo’d by life. The border shrinks from shock.",
+            "forgot how health bars work. The realm pulls in awkwardly.",
+            "went splat. The border panics and retreats.",
+            "got humbled. The world cinches inward.",
+            "got outplayed by gravity. The border cringes inward.",
+            "misclicked existence. The realm shrinks in confusion.",
+            "chose violence… badly. The world pulls closer.",
+            "took a fatal detour. The border curls inward.",
+            "lost the 1v1 against reality. The realm tightens.",
+            "respawned unexpectedly. The world shrinks out of reflex.",
+            "got ratio’d by nature. The border recoils inward.",
+            "got deleted by the environment. The realm contracts.",
+            "failed their survival exam. The border slides closer.",
+            "forgot to dodge. The world shrivels a bit.",
+            "got sent to the shadow lobby. The border panics and tightens."
+
     };
 
     // ---------------------------------------------------------------------
@@ -459,6 +539,202 @@ public class MessageManager {
                 shrinkLine
         };
     }
+
+    /**
+     * Builds the chat-based configuration panel that is shown
+     * when an OP right-clicks the Borders Control Book.
+     *
+     * v2.1: read-only status + config overview.
+     * Later we will extend this with clickable buttons.
+     */
+    public static Component[] buildConfigPanel(GameState state) {
+        // Derive some values
+        boolean gameActive = state.gameActive;
+        boolean failsafeEnabled = state.failsafeEnabled;
+
+        int borderSize = (int) Math.round(state.currentBorderSize);
+        int growthPerSide = state.discoveryGrowthBlocksPerSide;
+        boolean deathEnabled = state.deathShrinkEnabled;
+        int deathAmount = state.deathShrinkBlocksPerSide;
+
+        long failsafeTicks = state.borderFailsafeDelayTicks;
+        int failsafeSeconds = (int) (failsafeTicks / 20L);
+
+        // Header
+        Component header = Component.literal("=== Borders Configuration ===")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x00FFFF)) // aqua
+                        .withBold(true)
+                );
+
+        Component blank = Component.literal("");
+
+        // ---------------- STATUS ----------------
+        Component statusHeader = Component.literal("Status")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF)) // light aqua
+                        .withBold(true)
+                );
+
+        Component statusLine = Component.literal("Game: ")
+                .append(
+                        Component.literal(gameActive ? "ACTIVE" : "INACTIVE")
+                                .withStyle(style -> style.withColor(
+                                        gameActive ? 0x00FF00 : 0xFF5555
+                                ))
+                );
+
+        Component borderLine = Component.literal("Border size: ")
+                .append(
+                        Component.literal(String.valueOf(borderSize))
+                                .withStyle(style -> style.withColor(0xFFD700)) // gold
+                )
+                .append(Component.literal(" blocks (diameter)"))
+                .withStyle(style -> style.withColor(0xAAAAAA));
+
+        // ---------------- DISCOVERY EXPANSION ----------------
+        Component growthHeader = Component.literal("Discovery Expansion")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF))
+                        .withBold(true)
+                );
+
+        Component growthLine = Component.literal("Growth per new unique item: ")
+                .append(
+                        Component.literal("+" + growthPerSide)
+                                .withStyle(style -> style.withColor(0x00FF00)) // green
+                )
+                .append(Component.literal(" blocks per side"))
+                .withStyle(style -> style.withColor(0xAAAAAA));
+
+        // Preset buttons for /borders setgrowth
+        Component growthPresetsLabel = Component.literal("Presets: ")
+                .withStyle(style -> style.withColor(0xAAAAAA));
+
+        Component growthPreset1 = Component.literal("[1]")
+                .withStyle(style -> style
+                        .withColor(0x00FFFF)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.RunCommand("/borders setgrowth 1"))
+                );
+
+        Component growthPreset2 = Component.literal("[2]")
+                .withStyle(style -> style
+                        .withColor(0x00FFFF)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.RunCommand("/borders setgrowth 2"))
+                );
+
+        Component growthPreset3 = Component.literal("[3]")
+                .withStyle(style -> style
+                        .withColor(0x00FFFF)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.RunCommand("/borders setgrowth 3"))
+                );
+
+        Component growthPreset4 = Component.literal("[4]")
+                .withStyle(style -> style
+                        .withColor(0x00FFFF)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.RunCommand("/borders setgrowth 4"))
+                );
+
+        Component growthPreset5 = Component.literal("[5]")
+                .withStyle(style -> style
+                        .withColor(0x00FFFF)
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.RunCommand("/borders setgrowth 5"))
+                );
+
+        Component growthPresetsLine = Component.literal("")
+                .append(growthPresetsLabel)
+                .append(growthPreset1).append(Component.literal(" "))
+                .append(growthPreset2).append(Component.literal(" "))
+                .append(growthPreset3).append(Component.literal(" "))
+                .append(growthPreset4).append(Component.literal(" "))
+                .append(growthPreset5);
+
+        // Custom value (suggests /borders setgrowth <value>)
+        Component growthCustom = Component.literal("[Custom…]")
+                .withStyle(style -> style
+                        .withColor(0xFFFF55) // yellow
+                        .withBold(true)
+                        .withClickEvent(new ClickEvent.SuggestCommand("/borders setgrowth "))
+                );
+
+
+        // ---------------- DEATH SHRINK ----------------
+        Component deathHeader = Component.literal("Shrink on Death")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF))
+                        .withBold(true)
+                );
+
+        Component deathStatus = Component.literal("Status: ")
+                .append(
+                        Component.literal(deathEnabled ? "ENABLED" : "DISABLED")
+                                .withStyle(style -> style.withColor(
+                                        deathEnabled ? 0x00FF00 : 0xFF5555
+                                ))
+                );
+
+        Component deathAmountLine = Component.literal("Shrink amount: ")
+                .append(
+                        Component.literal("-" + deathAmount)
+                                .withStyle(style -> style.withColor(0xFF5555)) // red
+                )
+                .append(Component.literal(" blocks per side"))
+                .withStyle(style -> style.withColor(0xAAAAAA));
+
+        // ---------------- INACTIVITY EXPANSION ----------------
+        Component failsafeHeader = Component.literal("Inactivity Expansion")
+                .withStyle(style -> style
+                        .withColor(TextColor.fromRgb(0x55FFFF))
+                        .withBold(true)
+                );
+
+        Component failsafeStatus = Component.literal("Status: ")
+                .append(
+                        Component.literal(failsafeEnabled ? "ENABLED" : "DISABLED")
+                                .withStyle(style -> style.withColor(
+                                        failsafeEnabled ? 0x00FF00 : 0xFF5555
+                                ))
+                );
+
+        Component failsafeTimer = Component.literal("Timer: ")
+                .append(
+                        Component.literal(String.valueOf(failsafeSeconds))
+                                .withStyle(style -> style.withColor(0x00FF00))
+                )
+                .append(Component.literal(" seconds without discoveries"))
+                .withStyle(style -> style.withColor(0xAAAAAA));
+
+        return new Component[] {
+                header,
+                blank,
+
+                statusHeader,
+                statusLine,
+                borderLine,
+                blank,
+
+                growthHeader,
+                growthLine,
+                growthPresetsLine,
+                growthCustom,
+                blank,
+
+                deathHeader,
+                deathStatus,
+                deathAmountLine,
+                blank,
+
+                failsafeHeader,
+                failsafeStatus,
+                failsafeTimer
+        };
+    }
+
 
     /**
      * Small helper to format a colored "/command" + gray description line.
