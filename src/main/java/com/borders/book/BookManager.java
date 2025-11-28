@@ -183,15 +183,19 @@ public class BookManager {
                         new ClickEvent.RunCommand("/borders reload")
                 ));
 
-        Component page2Footer = Component.literal("\n§7Tap an option to run the command.");
-
         Component page2 = Component.literal("")
                 .append(page2Header)
                 .append(page2Start)
                 .append(page2Stop)
                 .append(page2Reset)
                 .append(page2Reload)
-                .append(page2Footer);
+                    .append(Component.literal("\n§7Back: "))
+                        .append(
+                            Component.literal("§3[ Home ]")
+                                .withStyle(style -> style.withClickEvent(
+                                        new ClickEvent.ChangePage(1)
+                                ))
+                );
 
         pages.add(Filterable.passThrough(page2));
 
@@ -232,10 +236,20 @@ public class BookManager {
                                         new ClickEvent.RunCommand("/borders setgrowth 10")
                                 ))
                 )
-                // Custom hint (no click)
+                // Custom hint (no click) + back link
                 .append(
-                        Component.literal("§3Custom: §7/borders setgrowth <amount>")
+                        Component.literal("§3Custom: §7/borders setgrowth <amount>\n\n")
+                )
+                .append(
+                        Component.literal("§7Back: ")
+                )
+                .append(
+                        Component.literal("§3[ Home ]")
+                                .withStyle(style -> style.withClickEvent(
+                                        new ClickEvent.ChangePage(1)
+                                ))
                 );
+
 
         pages.add(Filterable.passThrough(page3));
 
@@ -283,10 +297,20 @@ public class BookManager {
                                         new ClickEvent.RunCommand("/borders toggledeathshrink")
                                 ))
                 )
-                // Custom line
+                // Custom line + back link
                 .append(
-                        Component.literal("§3Custom: §7/borders setdeathshrink <amount>")
+                        Component.literal("§3Custom: §7/borders setdeathshrink <amount>\n\n")
+                )
+                .append(
+                        Component.literal("§7Back: ")
+                )
+                .append(
+                        Component.literal("§3[ Home ]")
+                                .withStyle(style -> style.withClickEvent(
+                                        new ClickEvent.ChangePage(1)
+                                ))
                 );
+
 
         pages.add(Filterable.passThrough(page4));
 
@@ -334,10 +358,20 @@ public class BookManager {
                                         new ClickEvent.RunCommand("/borders togglefailsafe")
                                 ))
                 )
-                // Custom line
+                // Custom line + back link
                 .append(
-                        Component.literal("§3Custom: §7/borders settimer <seconds>")
+                        Component.literal("§3Custom: §7/borders settimer <seconds>\n\n")
+                )
+                .append(
+                        Component.literal("§7Back: ")
+                )
+                .append(
+                        Component.literal("§3[ Home ]")
+                                .withStyle(style -> style.withClickEvent(
+                                        new ClickEvent.ChangePage(1)
+                                ))
                 );
+
 
         pages.add(Filterable.passThrough(page5));
 
@@ -357,12 +391,7 @@ public class BookManager {
                                         new ClickEvent.RunCommand("/borders grow 5")
                                 ))
                 )
-                .append(
-                        Component.literal("§3[ +10 per side ]\n\n")
-                                .withStyle(style -> style.withClickEvent(
-                                        new ClickEvent.RunCommand("/borders grow 10")
-                                ))
-                )
+
                 // Shrink section
                 .append(Component.literal("§7Shrink border by:\n"))
                 .append(
@@ -377,19 +406,24 @@ public class BookManager {
                                         new ClickEvent.RunCommand("/borders shrink 5")
                                 ))
                 )
+
+                // Custom lines + back link
                 .append(
-                        Component.literal("§3[ -10 per side ]\n\n")
+                        Component.literal("§3Custom: §7/borders grow <blocks>\n")
+                )
+                .append(
+                        Component.literal("§3Custom: §7/borders shrink <blocks>\n\n")
+                )
+                .append(
+                        Component.literal("§7Back: ")
+                )
+                .append(
+                        Component.literal("§3[ Home ]")
                                 .withStyle(style -> style.withClickEvent(
-                                        new ClickEvent.RunCommand("/borders shrink 10")
+                                        new ClickEvent.ChangePage(1)
                                 ))
-                )
-                // Custom lines
-                .append(
-                        Component.literal("§3Custom grow: §7/borders grow <blocks>\n")
-                )
-                .append(
-                        Component.literal("§3Custom shrink: §7/borders shrink <blocks>")
                 );
+
 
         pages.add(Filterable.passThrough(page6));
 
@@ -410,13 +444,23 @@ public class BookManager {
                                         new ClickEvent.RunCommand("/borders reload")
                                 ))
                 )
-                // [ HELP ]
+                // [ HELP ] + back link
                 .append(
                         Component.literal("§3[ HELP ]\n\n")
                                 .withStyle(style -> style.withClickEvent(
                                         new ClickEvent.RunCommand("/borders help")
                                 ))
+                )
+                .append(
+                        Component.literal("§7Back: ")
+                )
+                .append(
+                        Component.literal("§3[ Home ]")
+                                .withStyle(style -> style.withClickEvent(
+                                        new ClickEvent.ChangePage(1)
+                                ))
                 );
+
 
         pages.add(Filterable.passThrough(page7));
 
