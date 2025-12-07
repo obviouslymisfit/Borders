@@ -76,7 +76,7 @@ public class BordersMod implements ModInitializer {
 		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
 			BordersSavedData loaded = BordersSavedData.loadFromDisk();
 			if (loaded != null) {
-				loaded.applyToGameState(STATE);
+				loaded.applyToGameState(STATE, server);
 				LOGGER.info("[Borders] Loaded saved Borders state from config/borders_state.json");
 			} else {
 				LOGGER.info("[Borders] No saved Borders state found, using defaults.");
@@ -85,7 +85,7 @@ public class BordersMod implements ModInitializer {
 
 		// Save current Borders state when the server is stopping
 		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
-			BordersSavedData snapshot = BordersSavedData.fromGameState(STATE);
+			BordersSavedData snapshot = BordersSavedData.fromGameState(STATE, server);
 			snapshot.saveToDisk();
 			LOGGER.info("[Borders] Saved Borders state to config/borders_state.json");
 		});
