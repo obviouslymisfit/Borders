@@ -36,6 +36,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+import com.borders.state.BordersSavedData;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+
 
 
 /**
@@ -68,6 +71,25 @@ public class BordersMod implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Borders mod initializing...");
+
+		// Load saved Borders state (if any) into the global GameState
+		ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+			BordersSavedData loaded = BordersSavedData.loadFromDisk();
+			if (loaded != null) {
+				loaded.applyToGameState(STATE);
+				LOGGER.info("[Borders] Loaded saved Borders state from config/borders_state.json");
+			} else {
+				LOGGER.info("[Borders] No saved Borders state found, using defaults.");
+			}
+		});
+
+		// Save current Borders state when the server is stopping
+		ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+			BordersSavedData snapshot = BordersSavedData.fromGameState(STATE);
+			snapshot.saveToDisk();
+			LOGGER.info("[Borders] Saved Borders state to config/borders_state.json");
+		});
+
 
 		// Per-tick handler for main game loop logic
 		ServerTickEvents.END_SERVER_TICK.register(this::onEndServerTick);
