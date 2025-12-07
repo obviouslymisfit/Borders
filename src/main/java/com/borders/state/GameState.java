@@ -54,6 +54,11 @@ public class GameState {
     /** Cached border center Z coordinate (used for joins and reset). */
     public double borderCenterZ = 0.0;
 
+    // Number of future unique discoveries to ignore for border growth & scores.
+    // Items will STILL be added to OBTAINED_ITEMS while this is > 0.
+    public int ignoredDiscoveries = 0;
+
+
     // ------------------------------------------------------------------------
     // Game flags and timing
     // ------------------------------------------------------------------------

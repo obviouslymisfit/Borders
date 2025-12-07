@@ -1,10 +1,13 @@
 package com.borders.state;
 
+import com.borders.scoreboard.ScoreboardManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Item;
 
 import java.io.IOException;
@@ -12,10 +15,10 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-import net.minecraft.core.Holder;
-
 
 /**
  * Simple JSON-based persistence snapshot for Borders.
@@ -49,6 +52,9 @@ public class BordersSavedData {
     /** How many blocks per side the border grows per new item. */
     public int discoveryGrowthBlocksPerSide = 1;
 
+    /** Number of future unique discoveries to ignore for growth & scores. */
+    public int ignoredDiscoveries = 0;
+
     /** Whether the border has been initialized around the first spawn. */
     public boolean borderInitialized = false;
 
@@ -61,6 +67,12 @@ public class BordersSavedData {
      * Stored as registry names, e.g. "minecraft:stone".
      */
     public Set<String> obtainedItemIds = new HashSet<>();
+
+    /**
+     * Snapshot of player discovery scores (player name -> score).
+     * This mirrors the scoreboard for backup / restore.
+     */
+    public Map<String, Integer> playerScores = new HashMap<>();
 
     // --------- JSON + file handling ---------
 
@@ -78,6 +90,10 @@ public class BordersSavedData {
 
     // --------- Mapping between GameState and this snapshot ---------
 
+    /**
+     * Basic snapshot from GameState only (no scoreboard).
+     * Kept for backwards compatibility.
+     */
     public static BordersSavedData fromGameState(GameState state) {
         BordersSavedData data = new BordersSavedData();
 
@@ -89,6 +105,8 @@ public class BordersSavedData {
         data.deathShrinkEnabled = state.deathShrinkEnabled;
         data.deathShrinkBlocksPerSide = state.deathShrinkBlocksPerSide;
         data.discoveryGrowthBlocksPerSide = state.discoveryGrowthBlocksPerSide;
+
+        data.ignoredDiscoveries = state.ignoredDiscoveries;
 
         data.borderInitialized = state.BORDER_INITIALIZED;
         data.borderCenterX = state.borderCenterX;
@@ -103,9 +121,28 @@ public class BordersSavedData {
             }
         }
 
+        // playerScores is left as-is here (empty) – use the overload below
         return data;
     }
 
+    /**
+     * Snapshot from GameState + live scoreboard.
+     * Use this if you want JSON to also contain player scores.
+     */
+    public static BordersSavedData fromGameState(GameState state, MinecraftServer server) {
+        BordersSavedData data = fromGameState(state);
+
+        // Export scoreboard scores into the snapshot
+        data.playerScores.clear();
+        data.playerScores.putAll(ScoreboardManager.exportPlayerScores(server));
+
+        return data;
+    }
+
+    /**
+     * Apply core state (no scoreboard) back into GameState.
+     * Kept for backwards compatibility.
+     */
     public void applyToGameState(GameState state) {
         state.currentBorderSize = this.currentBorderSize;
         state.gameActive = this.gameActive;
@@ -115,6 +152,8 @@ public class BordersSavedData {
         state.deathShrinkEnabled = this.deathShrinkEnabled;
         state.deathShrinkBlocksPerSide = this.deathShrinkBlocksPerSide;
         state.discoveryGrowthBlocksPerSide = this.discoveryGrowthBlocksPerSide;
+
+        state.ignoredDiscoveries = this.ignoredDiscoveries;
 
         state.BORDER_INITIALIZED = this.borderInitialized;
         state.borderCenterX = this.borderCenterX;
@@ -136,7 +175,20 @@ public class BordersSavedData {
                 state.OBTAINED_ITEMS.add(item);
             }
         }
+    }
 
+    /**
+     * Apply core state + restore scoreboard from JSON.
+     * Call this if you want player scores restored.
+     */
+    public void applyToGameState(GameState state, MinecraftServer server) {
+        // First restore the core game state
+        applyToGameState(state);
+
+        // Then restore scoreboard scores if we have any
+        if (server != null && playerScores != null && !playerScores.isEmpty()) {
+            ScoreboardManager.importPlayerScores(server, playerScores);
+        }
     }
 
     // --------- Disk I/O ---------

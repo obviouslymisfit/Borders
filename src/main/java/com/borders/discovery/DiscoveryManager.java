@@ -4,6 +4,7 @@ import com.borders.BordersMod;
 import com.borders.border.BorderManager;
 import com.borders.messages.MessageManager;
 import com.borders.scoreboard.ScoreboardManager;
+import com.borders.state.GameState;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -32,6 +33,34 @@ public class DiscoveryManager {
      * @param item   The item that was newly obtained
      */
     public static void handleItemDiscovery(MinecraftServer server, ServerPlayer player, Item item) {
+        GameState state = BordersMod.STATE;
+
+        // ─────────────────────────────────────────────
+        // Episode 2 "backlog" handling:
+        // Ignore the first N unique discoveries for growth & scores,
+        // BUT still record items in OBTAINED_ITEMS so they can
+        // never trigger growth later.
+        // ─────────────────────────────────────────────
+        if (state.ignoredDiscoveries > 0) {
+            state.ignoredDiscoveries--;
+
+            // VERY IMPORTANT: still mark this item as obtained.
+            state.OBTAINED_ITEMS.add(item);
+
+            // Optional: log for debugging
+            BordersMod.LOGGER.info(
+                    "[Borders] Ignored discovery for backlog ({} remaining). Item={}",
+                    state.ignoredDiscoveries,
+                    item.toString()
+            );
+
+            // Do NOT:
+            //  - grow border
+            //  - increase scoreboard
+            //  - send "border grew" message
+            // Just exit.
+            return;
+        }
 
         // Build item & player names for messaging
         String itemName = new ItemStack(item).getHoverName().getString();
