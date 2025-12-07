@@ -184,6 +184,31 @@ public class CommandManager {
                         )
 
                         // ------------------------------------------------------------
+                        // /borders ignore <count>
+                        // Ignore first N unique discoveries for growth & scores,
+                        // but still record items in OBTAINED_ITEMS.
+                        // ------------------------------------------------------------
+                        .then(Commands.literal("ignore")
+                                .then(Commands.argument("count", IntegerArgumentType.integer(0))
+                                        .executes(ctx -> {
+                                            int count = IntegerArgumentType.getInteger(ctx, "count");
+
+                                            BordersMod.STATE.ignoredDiscoveries = count;
+
+                                            ctx.getSource().sendSystemMessage(
+                                                    Component.literal("[Borders] Will ignore first ")
+                                                            .append(Component.literal(String.valueOf(count))
+                                                                    .withStyle(style -> style.withColor(0xFFD700)))
+                                                            .append(Component.literal(" new unique discoveries ")
+                                                                    .append(Component.literal("(no growth, no scores)."))
+                                                            )
+                                            );
+                                            return 1;
+                                        })
+                                )
+                        )
+
+                        // ------------------------------------------------------------
                         // /borders toggledeathshrink
                         // (enable/disable death shrink mechanic)
                         // ------------------------------------------------------------

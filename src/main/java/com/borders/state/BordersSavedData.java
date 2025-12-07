@@ -49,6 +49,9 @@ public class BordersSavedData {
     /** How many blocks per side the border grows per new item. */
     public int discoveryGrowthBlocksPerSide = 1;
 
+    /** Number of future unique discoveries to ignore for growth & scores. */
+    public int ignoredDiscoveries = 0;
+
     /** Whether the border has been initialized around the first spawn. */
     public boolean borderInitialized = false;
 
@@ -90,6 +93,8 @@ public class BordersSavedData {
         data.deathShrinkBlocksPerSide = state.deathShrinkBlocksPerSide;
         data.discoveryGrowthBlocksPerSide = state.discoveryGrowthBlocksPerSide;
 
+        data.ignoredDiscoveries = state.ignoredDiscoveries;
+
         data.borderInitialized = state.BORDER_INITIALIZED;
         data.borderCenterX = state.borderCenterX;
         data.borderCenterZ = state.borderCenterZ;
@@ -115,6 +120,8 @@ public class BordersSavedData {
         state.deathShrinkEnabled = this.deathShrinkEnabled;
         state.deathShrinkBlocksPerSide = this.deathShrinkBlocksPerSide;
         state.discoveryGrowthBlocksPerSide = this.discoveryGrowthBlocksPerSide;
+
+        state.ignoredDiscoveries = this.ignoredDiscoveries;
 
         state.BORDER_INITIALIZED = this.borderInitialized;
         state.borderCenterX = this.borderCenterX;
